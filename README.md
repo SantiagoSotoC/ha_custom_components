@@ -1,6 +1,6 @@
 # AlarmDecoder Custom Integration for Home Assistant
 
-Este es un componente personalizado para integrar AlarmDecoder con Home Assistant, permitiendo manejar múltiples paneles (keypads) según su dirección.
+Este es un componente personalizado para integrar AlarmDecoder con Home Assistant, permitiendo manejar múltiples paneles (keypads) según su dirección. Es una modificacion del paquete original
 
 ---
 
@@ -21,9 +21,9 @@ Este es un componente personalizado para integrar AlarmDecoder con Home Assistan
 
 ## Funcionalidades futuras
 
-### Bypass automáticos de zona
+### Bypass de zona
 
-Esta integración planea implementar la función de bypass automático de zonas mediante la creación de entidades individuales para cada zona configurable.
+Esta integración planea implementar la función de bypass de zonas mediante la creación de entidades individuales para cada zona configurable.
 
 - Cada zona susceptible a bypass tendrá su propia entidad en Home Assistant (tipo `switch` o `binary_sensor`).
 - Estas entidades permitirán activar o desactivar el bypass manualmente desde la interfaz.
@@ -40,8 +40,3 @@ Esto facilitará el manejo dinámico y personalizado del bypass de zonas, mejora
 Por ahora no hay una versión lista para instalar. Próximamente se publicará un paquete o instrucciones para instalarlo manualmente.
 
 ---
-
-## Uso
-
-- Configurar las direcciones de los keypads en el archivo de configuración.
-- Añadir la integración en Home
