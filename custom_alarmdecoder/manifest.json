@@ -1,6 +1,6 @@
 {
-  "domain": "alarmdecoder",
-  "name": "AlarmDecoder",
+  "domain": "custom_alarmdecoder",
+  "name": "Custom AlarmDecoder",
   "codeowners": [],
   "config_flow": true,
   "documentation": "https://www.home-assistant.io/integrations/alarmdecoder",
