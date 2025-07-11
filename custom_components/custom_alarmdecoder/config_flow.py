@@ -28,6 +28,7 @@ from .const import (
     CONF_CODE_ARM_REQUIRED,
     CONF_DEVICE_BAUD,
     CONF_DEVICE_PATH,
+    CONF_KEYPADS,
     CONF_RELAY_ADDR,
     CONF_RELAY_CHAN,
     CONF_ZONE_LOOP,
@@ -64,6 +65,8 @@ class AlarmDecoderFlowHandler(ConfigFlow, domain=DOMAIN):
     def __init__(self) -> None:
         """Initialize AlarmDecoder ConfigFlow."""
         self.protocol = None
+        self._connection_data = {}
+        self._title = None
 
     @staticmethod
     @callback
@@ -90,6 +93,33 @@ class AlarmDecoderFlowHandler(ConfigFlow, domain=DOMAIN):
                     ),
                 }
             ),
+        )
+
+    async def async_step_keypads(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Ask for keypad addresses."""
+        errors = {}
+
+        if user_input is not None:
+            try:
+                keypads_raw = user_input[CONF_KEYPADS]
+                keypad_list = [
+                    int(k.strip()) for k in keypads_raw.split(",") if k.strip()
+                ]
+                return self.async_create_entry(
+                    title=self._title,
+                    data={**self._connection_data, CONF_KEYPADS: keypad_list},
+                )
+            except ValueError:
+                errors[CONF_KEYPADS] = "invalid_keypads"
+
+        schema = vol.Schema({vol.Required(CONF_KEYPADS): str})  # ej: "16,17,18"
+
+        return self.async_show_form(
+            step_id="keypads",
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_protocol(
@@ -123,9 +153,11 @@ class AlarmDecoderFlowHandler(ConfigFlow, domain=DOMAIN):
 
             try:
                 await self.hass.async_add_executor_job(test_connection)
-                return self.async_create_entry(
-                    title=title, data={CONF_PROTOCOL: self.protocol, **connection}
-                )
+
+                self._connection_data = {CONF_PROTOCOL: self.protocol, **connection}
+                self._title = title
+
+                return await self.async_step_keypads()
             except NoDeviceError:
                 errors["base"] = "cannot_connect"
             except Exception:

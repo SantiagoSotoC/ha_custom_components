@@ -21,6 +21,8 @@ DEFAULT_DEVICE_HOST = "alarmdecoder"
 DEFAULT_DEVICE_PATH = "/dev/ttyUSB0"
 DEFAULT_DEVICE_PORT = 10000
 DEFAULT_ZONE_TYPE = "window"
+CONF_KEYPADS = "keypads"
+
 
 DEFAULT_ARM_OPTIONS = {
     CONF_ALT_NIGHT_MODE: DEFAULT_ALT_NIGHT_MODE,
@@ -29,7 +31,7 @@ DEFAULT_ARM_OPTIONS = {
 }
 DEFAULT_ZONE_OPTIONS: dict = {}
 
-DOMAIN = "alarmdecoder"
+DOMAIN = "custom_alarmdecoder"
 
 OPTIONS_ARM = "arm_options"
 OPTIONS_ZONES = "zone_options"
