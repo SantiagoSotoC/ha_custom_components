@@ -42,13 +42,22 @@ async def async_setup_entry(
     options = entry.options
     arm_options = options.get(OPTIONS_ARM, DEFAULT_ARM_OPTIONS)
 
-    entity = AlarmDecoderAlarmPanel(
-        client=entry.runtime_data.client,
-        auto_bypass=arm_options[CONF_AUTO_BYPASS],
-        code_arm_required=arm_options[CONF_CODE_ARM_REQUIRED],
-        alt_night_mode=arm_options[CONF_ALT_NIGHT_MODE],
-    )
-    async_add_entities([entity])
+    keypads = entry.data.get("keypads")
+    if not keypads:
+        return  # No crear entidades si no hay keypads configurados
+
+    entities = []
+    for address in keypads:
+        entities.append(
+            AlarmDecoderAlarmPanel(
+                client=entry.runtime_data.client,
+                auto_bypass=arm_options[CONF_AUTO_BYPASS],
+                code_arm_required=arm_options[CONF_CODE_ARM_REQUIRED],
+                alt_night_mode=arm_options[CONF_ALT_NIGHT_MODE],
+                address=address,
+            )
+        )
+    async_add_entities(entities)
 
     platform = entity_platform.async_get_current_platform()
     platform.async_register_entity_service(
@@ -80,13 +89,14 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
         | AlarmControlPanelEntityFeature.ARM_NIGHT
     )
 
-    def __init__(self, client, auto_bypass, code_arm_required, alt_night_mode):
+    def __init__(self, client, auto_bypass, code_arm_required, alt_night_mode, address):
         """Initialize the alarm panel."""
         super().__init__(client)
         self._attr_unique_id = f"{client.serial_number}-panel"
         self._auto_bypass = auto_bypass
         self._attr_code_arm_required = code_arm_required
         self._alt_night_mode = alt_night_mode
+        self._address = address
 
     async def async_added_to_hass(self) -> None:
         """Register callbacks."""
@@ -96,8 +106,30 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
             )
         )
 
+    @staticmethod
+    def extract_keypad_addresses_from_message(message):
+        if message.raw[0] == "[":
+            raw = message.raw[28:58]
+            raw = bin(int(raw, 16))[2:]
+            message_keypads_bin_unsorted = str(raw[8:40])
+            byte0 = (message_keypads_bin_unsorted[0:8])[::-1]
+            byte1 = (message_keypads_bin_unsorted[8:16])[::-1]
+            byte2 = (message_keypads_bin_unsorted[16:24])[::-1]
+            byte3 = (message_keypads_bin_unsorted[24:35])[::-1]
+            message_keypads_bin_sorted = byte0 + byte1 + byte2 + byte3
+            message_target_keypads = []
+            for i in range(len(message_keypads_bin_sorted)):
+                if message_keypads_bin_sorted[i] == "1":
+                    message_target_keypads.append(i)
+            return message_target_keypads
+        return []
+
     def _message_callback(self, message):
         """Handle received messages."""
+        keypads = self.extract_keypad_addresses_from_message(message)
+        if self._address not in keypads:
+            return  # Ignorar mensajes que no son para este keypad
+
         if message.alarm_sounding or message.fire_alarm:
             self._attr_alarm_state = AlarmControlPanelState.TRIGGERED
         elif message.armed_away:
