@@ -252,7 +252,7 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
 
         if user_input is not None and not errors:
             zone_number = int(user_input[CONF_ZONE_NUMBER])
-            self.selected_zone = f"{zone_number:02d}"  # Mantener formato 2 dígitos (ej: "09")
+            self.selected_zone = str(int(user_input[CONF_ZONE_NUMBER]))
             return await self.async_step_zone_details()
 
         return self.async_show_form(
