@@ -74,21 +74,22 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
         entry_id: str,
     ) -> None:
         """Initialize the switch."""
-        super().__init__(controller, entry_id)
+        super().__init__(controller)
         
+        self._entry_id = entry_id
         self._zone_number = zone_number
         self._zone_config = zone_config
         self._attr_name = f"Zone {zone_number} Bypass"
         self._attr_unique_id = f"{entry_id}_{zone_number}_bypass"
+        self._attr_icon = "mdi:shield-check"
         self._is_bypassed = False
         
         # Configurar nombre personalizado si existe
-        if zone_name := zone_config.get("name"):          # ← Debería ser CONF_ZONE_NAME
+        if zone_name := zone_config.get(CONF_ZONE_NAME):
             self._attr_name = f"{zone_name} Bypass"
     
-    
     @property
-    def is_on(self) -> bool:
+    def is_on(self) -> bool | None:
         """Return true if zone is marked for bypass."""
         return self._is_bypassed
     
@@ -98,7 +99,7 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
         return self._zone_number
     
     @property
-    def extra_state_attributes(self) -> dict[str, Any]:
+    def extra_state_attributes(self) -> dict[str, Any] | None:
         """Return additional state attributes."""
         attrs = super().extra_state_attributes
         if attrs is None:
@@ -108,8 +109,8 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
         
         attrs.update({
             "zone_number": self._zone_number,
-            "zone_type": self._zone_config.get("type", "door_window"),
-            "zone_name": self._zone_config.get("name", f"Zone {self._zone_number}"),
+            "zone_type": self._zone_config.get(CONF_ZONE_TYPE, "door_window"),
+            "zone_name": self._zone_config.get(CONF_ZONE_NAME, f"Zone {self._zone_number}"),
             "marked_for_bypass": self._is_bypassed,
         })
         return attrs
@@ -117,12 +118,14 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Mark zone for bypass on next arming."""
         self._is_bypassed = True
+        self._attr_icon = "mdi:shield-off"
         self.async_write_ha_state()
         _LOGGER.debug("Zone %s marked for bypass", self._zone_number)
     
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Unmark zone for bypass."""
         self._is_bypassed = False
+        self._attr_icon = "mdi:shield-check"
         self.async_write_ha_state()
         _LOGGER.debug("Zone %s unmarked for bypass", self._zone_number)
     
@@ -130,6 +133,7 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
         """Reset bypass state after arming/disarming."""
         if self._is_bypassed:
             self._is_bypassed = False
+            self._attr_icon = "mdi:shield-check"
             self.async_schedule_update_ha_state()
     
     def _message_callback(self, message) -> None:
