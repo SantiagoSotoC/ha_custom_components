@@ -103,6 +103,14 @@
             "zone_bypass": {
                 "name": "Zone {zone_number} Bypass"
             }
+        },
+        "alarm_control_panel": {
+            "state": {
+                "disarmed": "Disarmed",
+                "armed_away": "Armed Away",
+                "armed_home": "Armed Home", 
+                "triggered": "Triggered"
+            }
         }
     }
 }

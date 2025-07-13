@@ -150,6 +150,40 @@ class TestTranslations:
         assert "bypass" in en_auto_bypass.lower()
         assert "bypass" in es_auto_bypass.lower()
     
+    def test_alarm_panel_state_translations(self):
+        """Test alarm control panel state translations"""
+        with open(self.en_file, 'r', encoding='utf-8') as f:
+            en_data = json.load(f)
+        
+        with open(self.es_file, 'r', encoding='utf-8') as f:
+            es_data = json.load(f)
+        
+        # Verificar que existen las traducciones de estados
+        assert "alarm_control_panel" in en_data["entity"]
+        assert "alarm_control_panel" in es_data["entity"]
+        
+        # Verificar estados específicos
+        en_states = en_data["entity"]["alarm_control_panel"]["state"]
+        es_states = es_data["entity"]["alarm_control_panel"]["state"]
+        
+        expected_states = ["disarmed", "armed_away", "armed_home", "triggered"]
+        
+        for state in expected_states:
+            assert state in en_states, f"State '{state}' missing in English"
+            assert state in es_states, f"State '{state}' missing in Spanish"
+            assert len(en_states[state]) > 0, f"Empty English translation for state '{state}'"
+            assert len(es_states[state]) > 0, f"Empty Spanish translation for state '{state}'"
+        
+        # Verificar traducciones específicas
+        assert en_states["disarmed"] == "Disarmed"
+        assert es_states["disarmed"] == "Desarmado"
+        assert en_states["armed_away"] == "Armed Away"
+        assert es_states["armed_away"] == "Armado Fuera"
+        assert en_states["armed_home"] == "Armed Home"
+        assert es_states["armed_home"] == "Armado Casa"
+        assert en_states["triggered"] == "Triggered"
+        assert es_states["triggered"] == "Disparado"
+    
     def test_service_translations(self):
         """Test service name and description translations"""
         with open(self.en_file, 'r', encoding='utf-8') as f:

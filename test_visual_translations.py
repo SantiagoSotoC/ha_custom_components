@@ -113,6 +113,21 @@ def test_visual_translations():
         print(f"  ES: {es_value}")
         print()
     
+    # Probar estados del panel de alarma
+    print("\n🚨 ESTADOS DEL PANEL DE ALARMA:")
+    print("-" * 30)
+    
+    states = ["disarmed", "armed_away", "armed_home", "triggered"]
+    
+    for state in states:
+        en_state = en_data["entity"]["alarm_control_panel"]["state"][state]
+        es_state = es_data["entity"]["alarm_control_panel"]["state"][state]
+        
+        print(f"Estado '{state}':")
+        print(f"  EN: {en_state}")
+        print(f"  ES: {es_state}")
+        print()
+    
     print("✅ PRUEBA VISUAL COMPLETADA")
 
 
