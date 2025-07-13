@@ -1,6 +1,5 @@
 """Constants for the AlarmDecoder component."""
 
-CONF_ALT_NIGHT_MODE = "alt_night_mode"
 CONF_AUTO_BYPASS = "auto_bypass"
 CONF_CODE_ARM_REQUIRED = "code_arm_required"
 CONF_DEVICE_BAUD = "device_baudrate"
@@ -13,7 +12,6 @@ CONF_ZONE_NUMBER = "zone_number"
 CONF_ZONE_RFID = "zone_rfid"
 CONF_ZONE_TYPE = "zone_type"
 
-DEFAULT_ALT_NIGHT_MODE = False
 DEFAULT_AUTO_BYPASS = False
 DEFAULT_CODE_ARM_REQUIRED = True
 DEFAULT_DEVICE_BAUD = 115200
@@ -25,7 +23,6 @@ CONF_KEYPADS = "keypads"
 
 
 DEFAULT_ARM_OPTIONS = {
-    CONF_ALT_NIGHT_MODE: DEFAULT_ALT_NIGHT_MODE,
     CONF_AUTO_BYPASS: DEFAULT_AUTO_BYPASS,
     CONF_CODE_ARM_REQUIRED: DEFAULT_CODE_ARM_REQUIRED,
 }

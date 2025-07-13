@@ -23,7 +23,6 @@ from homeassistant.const import CONF_HOST, CONF_PORT, CONF_PROTOCOL
 from homeassistant.core import callback
 
 from .const import (
-    CONF_ALT_NIGHT_MODE,
     CONF_AUTO_BYPASS,
     CONF_CODE_ARM_REQUIRED,
     CONF_DEVICE_BAUD,
@@ -235,10 +234,6 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
             data_schema=vol.Schema(
                 {
                     vol.Optional(
-                        CONF_ALT_NIGHT_MODE,
-                        default=self.arm_options[CONF_ALT_NIGHT_MODE],
-                    ): bool,
-                    vol.Optional(
                         CONF_AUTO_BYPASS, default=self.arm_options[CONF_AUTO_BYPASS]
                     ): bool,
                     vol.Optional(
@@ -256,9 +251,8 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
         errors = _validate_zone_input(user_input)
 
         if user_input is not None and not errors:
-            self.selected_zone = str(
-                int(user_input[CONF_ZONE_NUMBER])
-            )  # remove leading zeros
+            zone_number = int(user_input[CONF_ZONE_NUMBER])
+            self.selected_zone = f"{zone_number:02d}"  # Mantener formato 2 dígitos (ej: "09")
             return await self.async_step_zone_details()
 
         return self.async_show_form(

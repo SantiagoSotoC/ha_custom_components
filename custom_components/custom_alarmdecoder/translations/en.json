@@ -42,7 +42,6 @@
         "step": {
             "arm_settings": {
                 "data": {
-                    "alt_night_mode": "Alternative night mode",
                     "auto_bypass": "Auto-bypass on arm",
                     "code_arm_required": "Code required for arming"
                 },

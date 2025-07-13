@@ -45,8 +45,7 @@
         "title": "[%key:component::custom_alarmdecoder::options::step::init::title%]",
         "data": {
           "auto_bypass": "Auto-bypass on arm",
-          "code_arm_required": "Code required for arming",
-          "alt_night_mode": "Alternative night mode"
+          "code_arm_required": "Code required for arming"
         }
       },
       "zone_select": {

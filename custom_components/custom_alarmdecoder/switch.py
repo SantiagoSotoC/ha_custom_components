@@ -79,8 +79,8 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
         self._entry_id = entry_id
         self._zone_number = zone_number
         self._zone_config = zone_config
-        self._attr_name = f"Zone {zone_number} Bypass"
-        self._attr_unique_id = f"{entry_id}_{zone_number}_bypass"
+        self._attr_name = f"Zone {zone_number:02d} Bypass"
+        self._attr_unique_id = f"{entry_id}_{zone_number:02d}_bypass"
         self._attr_icon = "mdi:shield-check"
         self._is_bypassed = False
         
