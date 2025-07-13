@@ -220,7 +220,7 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
         if code:
             self._client.send(f"{code!s}1")
 
-    async def alarm_arm_away(self, code: str | None = None) -> None:
+    def alarm_arm_away(self, code: str | None = None) -> None:
         """Send arm away command."""
         # Obtener zonas marcadas para bypass
         bypass_zones = self._get_bypass_zones()
@@ -237,8 +237,6 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
             _LOGGER.debug("Sending arm away command: '%s'", arm_command)
             self._client.send(arm_command)
             
-            # Resetear switches de bypass después del armado
-            await self._reset_bypass_switches()
         else:
             _LOGGER.debug("Arming away without bypasses using standard method")
             # Usar el método estándar del cliente para armado sin bypasses
@@ -249,7 +247,7 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
             )
         
 
-    async def alarm_arm_home(self, code: str | None = None) -> None:
+    def alarm_arm_home(self, code: str | None = None) -> None:
         """Send arm home command."""
         # Obtener zonas marcadas para bypass
         bypass_zones = self._get_bypass_zones()
@@ -266,8 +264,6 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
             _LOGGER.debug("Sending arm home command: '%s'", arm_command)
             self._client.send(arm_command)
             
-            # Resetear switches de bypass después del armado
-            await self._reset_bypass_switches()
         else:
             _LOGGER.debug("Arming home without bypasses using standard method")
             # Usar el método estándar del cliente para armado sin bypasses
