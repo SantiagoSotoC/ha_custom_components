@@ -8,46 +8,161 @@ This is a custom component for integrating AlarmDecoder with Home Assistant, all
 
 ## Status
 
-⚠️ **Under development** – This integration is currently **not functional** and still a work in progress.
+✅ **Functional** – This integration is currently **working** with basic features implemented.
+
+### Current Limitations
+- **Single partition support only**: Currently supports one partition (default partition)
+- **Default partition messages**: All alarm messages are sent from the default partition address
+
+### Compatibility
+⚠️ **Honeywell Panels Only** – This version has been **tested only with Honeywell panels** and specifically with a **Honeywell Vista 48LA** panel. DSC panel compatibility has not been tested and may not work correctly.
+
+**Tested Hardware:**
+- ✅ **Honeywell Vista 48LA** (Fully tested and working)
+- ❓ **DSC Panels** (Not tested - compatibility unknown)
 
 ---
 
-## Planned Features
+## Current Features
 
-- Support for multiple alarm panels (keypads).
-- Message filtering per panel based on keypad address.
-- Custom services for alarm control.
-- Full integration with Home Assistant.
+### ✅ Zone Bypass System
+- **Individual bypass switches**: Each configurable zone has its own Home Assistant switch entity
+- **Manual bypass control**: Toggle bypass status for individual zones from the UI
+- **Automatic bypass commands**: System sends proper bypass commands when arming
+- **Auto-bypass support**: Automatic bypass of zones with faults during arming
+- **Bypass command format**: `code + 6 + zones + *` for manual bypass, `code + 6 + #` for auto-bypass
+
+### ✅ Alarm Control
+- **Arm Away/Home**: Full support with bypass integration
+- **Disarm**: Standard disarm functionality
+- **Custom keypresses**: Send custom commands to the alarm panel
+- **Toggle chime**: Control panel chime settings
+
+### ✅ Configuration
+- **Zone configuration**: Add, edit, and remove zones through the UI
+- **Bypass settings**: Configure which zones support bypass
+- **Zone types**: Support for different zone types (door/window, motion, etc.)
+- **Multi-language support**: Full Spanish and English translations
+
+### ✅ Zone Management
+- **Zone numbering**: Supports zones 1-999 without leading zeros
+- **Zone deletion**: Proper zone removal handling
+- **Zone editing**: Edit existing zone configurations
 
 ---
 
-## Upcoming Features
+## Hardware Requirements
 
-### Zone Bypass
+### Supported Panels
+- **Honeywell Vista Series**: ✅ Tested and working
+  - **Vista 48LA**: ✅ Fully tested
+  - **Other Vista models**: Likely compatible but not specifically tested
 
-This integration will support automatic bypassing by creating individual entities for each configurable zone.
+### Unsupported/Untested Panels
+- **DSC Panels**: ❓ Not tested - may require command format modifications
+- **Other manufacturers**: ❓ Unknown compatibility
 
-- Each bypassable zone will have its own Home Assistant entity (e.g., `switch`).
-- These entities will allow manual toggle of bypass status from the UI.
-- The integration will send the corresponding bypass commands to the panel on arming.
-- When arming the system, active bypass settings will be respected automatically.
-- The configuration flow will allow selecting which zones support bypass.
+### AlarmDecoder Hardware
+- Any AlarmDecoder device (AD2USB, AD2Serial, AD2PI, etc.)
+- Connected to a compatible Honeywell panel
 
-This enables a more dynamic and user-friendly way to manage zone bypasses in Home Assistant.
+---
+
+## Planned Features (Future Releases)
+
+- **Multi-partition support**: Support for multiple alarm partitions
+- **Partition-specific messages**: Messages routed to specific partition addresses
+- **Advanced keypad handling**: Full multi-keypad address support
+- **DSC panel support**: Testing and compatibility for DSC panels
 
 ---
 
 ## Installation
 
-There is no installable release yet. Installation instructions or packages will be provided soon.
+### HACS (Recommended)
+1. Add this repository to HACS as a custom repository
+2. Install "AlarmDecoder Custom" through HACS
+3. Restart Home Assistant
+4. Add the integration via Settings > Devices & Services
+
+### Manual Installation
+1. Copy the `custom_components/custom_alarmdecoder` folder to your Home Assistant `config/custom_components/` directory
+2. Restart Home Assistant
+3. Add the integration via Settings > Devices & Services
 
 ---
 
-## Usage
+## Configuration
 
-- Configure the keypad addresses through the configuration UI.
-- Add the integration via Home Assistant.
-- Each keypad will appear as a separate alarm control panel entity.
+### Basic Setup
+1. Go to Settings > Devices & Services
+2. Click "Add Integration" and search for "AlarmDecoder"
+3. Configure your AlarmDecoder connection details
+4. Set up zones and their bypass capabilities
+
+### Zone Bypass Configuration
+1. In the integration options, select "Configure Zones"
+2. For each zone:
+   - Enter zone name and type
+   - Enable "Allow Bypass" for zones you want to control
+   - Configure zone-specific settings (RFID loop, relay settings, etc.)
+
+### Usage Examples
+
+#### Manual Zone Bypass
+```yaml
+# Example: Bypass zone 1 and 5, then arm away
+service: switch.turn_on
+target:
+  entity_id: 
+    - switch.zone_1_bypass
+    - switch.zone_5_bypass
+
+# Then arm the system - bypasses will be applied automatically
+service: alarm_control_panel.alarm_arm_away
+target:
+  entity_id: alarm_control_panel.alarmdecoder
+data:
+  code: "1234"
+```
+
+#### Auto-Bypass
+Enable "Auto-bypass on arm" in the integration options to automatically bypass zones with faults when arming.
+
+---
+
+## Command Reference
+
+### Bypass Commands (Honeywell Format)
+- **Manual bypass**: `code + 6 + zones + *` (e.g., `123461520*` for zones 1, 5, 20)
+- **Auto bypass**: `code + 6 + #` (e.g., `12346#` for automatic fault bypass)
+
+### Arm Commands (Honeywell Format)
+- **Arm Away**: `code + 2` (e.g., `12342`)
+- **Arm Home**: `code + 3` (e.g., `12343`)
+- **Disarm**: `code + 1` (e.g., `12341`)
+
+**Note**: These command formats are specific to Honeywell panels. DSC panels may use different command sequences.
+
+---
+
+## Troubleshooting
+
+### Panel Compatibility Issues
+If you're using a DSC panel and commands aren't working:
+1. Check your panel's manual for the correct bypass command format
+2. Consider contributing DSC support by testing and reporting command formats
+
+### Zone Deletion Issues
+If you cannot delete a zone (e.g., zone 9 vs 09 formatting):
+1. Try entering the zone number without leading zeros
+2. Clear the zone name field completely to delete the zone
+
+### RFID Loop Configuration
+If you encounter type errors when editing zones with RFID loops:
+1. Clear the RFID loop field
+2. Re-enter the value
+3. Save the configuration
 
 ---
 
@@ -55,8 +170,47 @@ There is no installable release yet. Installation instructions or packages will 
 
 Contributions and suggestions are welcome. This project is maintained independently and not officially supported by the Home Assistant team.
 
+### Especially Needed
+- **DSC Panel Testing**: If you have a DSC panel, testing and feedback would be greatly appreciated
+- **Other Honeywell Models**: Testing with other Vista models would help expand compatibility
+
+### Development Status
+- **Zone bypass system**: ✅ Complete (Honeywell)
+- **Single partition support**: ✅ Complete (Honeywell)
+- **Multi-language support**: ✅ Complete
+- **Multi-partition support**: 🔄 Planned
+- **DSC panel support**: 🔄 Needs testing
+- **Advanced keypad handling**: 🔄 Planned
+
 ---
 
 ## License
 
 This project is open source and licensed under the **Apache License 2.0**, same as Home Assistant.
+
+---
+
+## Changelog
+
+### Current Version
+- ✅ Functional zone bypass system (Honeywell panels)
+- ✅ Individual zone control switches
+- ✅ Auto-bypass support for faulted zones
+- ✅ Full Spanish/English translations
+- ✅ Proper zone number formatting (no leading zeros)
+- ✅ Configuration UI improvements
+- ✅ Tested and working with Honeywell Vista 48LA
+- ⚠️ Single partition support only (default partition)
+- ⚠️ Honeywell panels only (DSC not tested)
+
+### Known Issues
+- Zone deletion may require entering numbers without leading zeros
+- RFID loop editing may require field clearing/re-entry
+- Multi-partition support not yet implemented
+- DSC panel compatibility unknown
+
+---
+
+## Disclaimer
+
+This integration has been developed and tested specifically with Honeywell Vista panels. While it may work with other panel types, compatibility is not guaranteed. Use at your own risk and always test thoroughly in a safe environment before deploying in production.
