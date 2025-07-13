@@ -1,0 +1,108 @@
+{
+    "config": {
+        "abort": {
+            "already_configured": "El dispositivo ya está configurado"
+        },
+        "create_entry": {
+            "default": "Conectado exitosamente al AlarmDecoder."
+        },
+        "error": {
+            "cannot_connect": "Error al conectar",
+            "unknown": "Error inesperado"
+        },
+        "step": {
+            "protocol": {
+                "data": {
+                    "device_baudrate": "Velocidad de baudios del dispositivo",
+                    "device_path": "Ruta del dispositivo",
+                    "host": "Servidor",
+                    "port": "Puerto"
+                },
+                "data_description": {
+                    "host": "El nombre del servidor o dirección IP del dispositivo AlarmDecoder que está conectado a su panel de alarma.",
+                    "port": "El puerto en el cual AlarmDecoder es accesible (por ejemplo, 10000)"
+                },
+                "title": "Configurar ajustes de conexión"
+            },
+            "user": {
+                "data": {
+                    "protocol": "Protocolo"
+                },
+                "title": "Seleccionar protocolo AlarmDecoder"
+            }
+        }
+    },
+    "options": {
+        "error": {
+            "int": "El campo de abajo debe ser un número entero.",
+            "loop_range": "'Bucle RF' debe ser un número entero entre 1 y 4.",
+            "loop_rfid": "'Bucle RF' no se puede usar sin 'Serie RF'.",
+            "relay_inclusive": "'Dirección de relé' y 'Canal de relé' son codependientes y deben incluirse juntos."
+        },
+        "step": {
+            "arm_settings": {
+                "data": {
+                    "auto_bypass": "Bypass automático al armar",
+                    "code_arm_required": "Código requerido para armar"
+                },
+                "title": "Configurar AlarmDecoder"
+            },
+            "init": {
+                "data": {
+                    "edit_selection": "Editar"
+                },
+                "description": "¿Qué te gustaría editar?",
+                "title": "Configurar AlarmDecoder"
+            },
+            "zone_details": {
+                "data": {
+                    "zone_loop": "Bucle RF",
+                    "zone_name": "Nombre de zona",
+                    "zone_relayaddr": "Dirección de relé",
+                    "zone_relaychan": "Canal de relé",
+                    "zone_rfid": "Serie RF",
+                    "zone_type": "Tipo de zona",
+                    "bypassable": "Permitir Bypass"
+                },
+                "description": "Ingrese los detalles para la zona {zone_number}. Para eliminar la zona {zone_number}, deje en blanco 'Nombre de zona'.",
+                "title": "Configurar AlarmDecoder"
+            },
+            "zone_select": {
+                "data": {
+                    "zone_number": "Número de zona"
+                },
+                "description": "Ingrese el número de zona que desea agregar, editar o eliminar.",
+                "title": "Configurar AlarmDecoder"
+            }
+        }
+    },
+    "services": {
+        "alarm_keypress": {
+            "description": "Envía pulsaciones de teclas personalizadas a la alarma.",
+            "fields": {
+                "keypress": {
+                    "description": "Cadena para enviar al panel de alarma.",
+                    "name": "Pulsación de tecla"
+                }
+            },
+            "name": "Pulsación de tecla"
+        },
+        "alarm_toggle_chime": {
+            "description": "Envía a la alarma el comando para alternar el timbre.",
+            "fields": {
+                "code": {
+                    "description": "Código para alternar el timbre del panel de control de alarma.",
+                    "name": "Código"
+                }
+            },
+            "name": "Alternar timbre"
+        }
+    },
+    "entity": {
+        "switch": {
+            "zone_bypass": {
+                "name": "Bypass Zona {zone_number}"
+            }
+        }
+    }
+}

@@ -79,14 +79,21 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
         self._entry_id = entry_id
         self._zone_number = zone_number
         self._zone_config = zone_config
-        self._attr_name = f"Zone {zone_number:02d} Bypass"
-        self._attr_unique_id = f"{entry_id}_{zone_number:02d}_bypass"
+        
+        # Usar números sin ceros delante para unique_id y nombre
+        self._attr_unique_id = f"{entry_id}_{zone_number}_bypass"
         self._attr_icon = "mdi:shield-check"
         self._is_bypassed = False
         
-        # Configurar nombre personalizado si existe
+        # Configurar nombre personalizado si existe, sino usar número de zona
         if zone_name := zone_config.get(CONF_ZONE_NAME):
             self._attr_name = f"{zone_name} Bypass"
+        else:
+            self._attr_name = f"Zone {zone_number} Bypass"
+        
+        # Definir translation_key para usar las traducciones
+        self._attr_translation_key = "zone_bypass"
+        self._attr_translation_placeholders = {"zone_number": str(zone_number)}
     
     @property
     def is_on(self) -> bool | None:

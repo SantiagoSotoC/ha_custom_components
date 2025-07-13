@@ -97,5 +97,12 @@
         }
       }
     }
+  },
+  "entity": {
+    "switch": {
+      "zone_bypass": {
+        "name": "Zone {zone_number} Bypass"
+      }
+    }
   }
 }
