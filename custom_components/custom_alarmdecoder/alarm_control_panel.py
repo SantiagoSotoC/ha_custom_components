@@ -215,12 +215,13 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
             _LOGGER.debug("Sending bypass command: '%s'", bypass_command)
             self._client.send(bypass_command)
             # Luego enviar comando de armado away
-            arm_command = f"{code or ''}2"
-            _LOGGER.debug("Sending arm away command: '%s'", arm_command)
-            self._client.send(arm_command)
+            self._client.arm_away(
+                code=code,
+                code_arm_required=self._attr_code_arm_required,
+                auto_bypass=self._auto_bypass,
+            )
         else:
             _LOGGER.debug("Arming away without bypasses using standard method")
-            # Armado normal sin bypasses
             self._client.arm_away(
                 code=code,
                 code_arm_required=self._attr_code_arm_required,
@@ -242,7 +243,11 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
             # Luego enviar comando de armado home
             arm_command = f"{code or ''}3"
             _LOGGER.debug("Sending arm home command: '%s'", arm_command)
-            self._client.send(arm_command)
+            self._client.arm_home(
+                code=code,
+                code_arm_required=self._attr_code_arm_required,
+                auto_bypass=self._auto_bypass,
+            )
         else:
             _LOGGER.debug("Arming home without bypasses using standard method")
             # Armado normal sin bypasses
