@@ -198,7 +198,8 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
         
         return bypass_string
     
-    def _reset_bypass_switches(self) -> None:
+
+    async def _reset_bypass_switches(self) -> None:
         """Reset all bypass switches after arming."""
         entity_reg = er.async_get(self.hass)
         
@@ -207,12 +208,12 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
                 entity.domain == "switch" and 
                 "_bypass" in entity.unique_id):
                 
-                # Llamar al servicio para apagar el switch
-                self.hass.async_create_task(
-                    self.hass.services.async_call(
-                        "switch", "turn_off", {"entity_id": entity_id}
-                    )
+                # Usar await directamente en lugar de async_create_task
+                await self.hass.services.async_call(
+                    "switch", "turn_off", {"entity_id": entity_id}
                 )
+                _LOGGER.debug("Reset bypass switch: %s", entity_id)
+
 
     def alarm_disarm(self, code: str | None = None) -> None:
         """Send disarm command."""
