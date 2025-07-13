@@ -261,6 +261,7 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
             errors=errors,
         )
 
+
     async def async_step_zone_details(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
@@ -283,6 +284,11 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
 
         existing_zone_settings = self.zone_options.get(self.selected_zone, {})
 
+        # CORRECCIÓN: Convertir valores int a str para suggested_value
+        def safe_str_value(key):
+            value = existing_zone_settings.get(key)
+            return str(value) if value is not None else None
+
         return self.async_show_form(
             step_id="zone_details",
             description_placeholders={CONF_ZONE_NUMBER: self.selected_zone},
@@ -291,9 +297,7 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
                     vol.Optional(
                         CONF_ZONE_NAME,
                         description={
-                            "suggested_value": existing_zone_settings.get(
-                                CONF_ZONE_NAME
-                            )
+                            "suggested_value": existing_zone_settings.get(CONF_ZONE_NAME)
                         },
                     ): str,
                     vol.Optional(
@@ -305,43 +309,36 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
                     vol.Optional(
                         CONF_ZONE_RFID,
                         description={
-                            "suggested_value": existing_zone_settings.get(
-                                CONF_ZONE_RFID
-                            )
+                            "suggested_value": existing_zone_settings.get(CONF_ZONE_RFID)
                         },
                     ): str,
                     vol.Optional(
                         CONF_ZONE_LOOP,
                         description={
-                            "suggested_value": existing_zone_settings.get(
-                                CONF_ZONE_LOOP
-                            )
+                            "suggested_value": safe_str_value(CONF_ZONE_LOOP)  # ← CORREGIDO
                         },
                     ): str,
                     vol.Optional(
                         CONF_RELAY_ADDR,
                         description={
-                            "suggested_value": existing_zone_settings.get(
-                                CONF_RELAY_ADDR
-                            )
+                            "suggested_value": safe_str_value(CONF_RELAY_ADDR)  # ← CORREGIDO
                         },
                     ): str,
                     vol.Optional(
                         CONF_RELAY_CHAN,
                         description={
-                            "suggested_value": existing_zone_settings.get(
-                                CONF_RELAY_CHAN
-                            )
+                            "suggested_value": safe_str_value(CONF_RELAY_CHAN)  # ← CORREGIDO
                         },
                     ): str,
                     vol.Optional(
-                        CONF_BYPASSABLE,  # Nueva línea
+                        CONF_BYPASSABLE,
                         default=existing_zone_settings.get(CONF_BYPASSABLE, False),
                     ): bool,
                 }
             ),
             errors=errors,
         )
+
 
 
 def _validate_zone_input(zone_input: dict[str, Any] | None) -> dict[str, str]:
