@@ -62,7 +62,8 @@
                     "zone_relayaddr": "Relay address",
                     "zone_relaychan": "Relay channel",
                     "zone_rfid": "RF serial",
-                    "zone_type": "Zone type"
+                    "zone_type": "Zone type",
+                    "bypassable": "Allow Bypass"
                 },
                 "description": "Enter details for zone {zone_number}. To delete zone {zone_number}, leave 'Zone name' blank.",
                 "title": "Configure AlarmDecoder"

@@ -65,7 +65,8 @@
           "zone_rfid": "RF serial",
           "zone_loop": "RF loop",
           "zone_relayaddr": "Relay address",
-          "zone_relaychan": "Relay channel"
+          "zone_relaychan": "Relay channel",
+          "bypassable": "Allow Bypass"
         }
       }
     },

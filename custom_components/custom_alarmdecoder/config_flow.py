@@ -48,6 +48,7 @@ from .const import (
     OPTIONS_ZONES,
     PROTOCOL_SERIAL,
     PROTOCOL_SOCKET,
+    CONF_BYPASSABLE,
 )
 
 EDIT_KEY = "edit_selection"
@@ -339,6 +340,10 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
                             )
                         },
                     ): str,
+                    vol.Optional(
+                        CONF_BYPASSABLE,  # Nueva línea
+                        default=existing_zone_settings.get(CONF_BYPASSABLE, False),
+                    ): bool,
                 }
             ),
             errors=errors,

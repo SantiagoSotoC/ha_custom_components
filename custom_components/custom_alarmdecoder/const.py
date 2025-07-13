@@ -44,3 +44,5 @@ SIGNAL_REL_MESSAGE = "alarmdecoder.rel_message"
 SIGNAL_RFX_MESSAGE = "alarmdecoder.rfx_message"
 SIGNAL_ZONE_FAULT = "alarmdecoder.zone_fault"
 SIGNAL_ZONE_RESTORE = "alarmdecoder.zone_restore"
+
+CONF_BYPASSABLE = "bypassable"
