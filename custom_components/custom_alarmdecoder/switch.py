@@ -10,7 +10,14 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 from . import AlarmDecoderConfigEntry
-from .const import DOMAIN, OPTIONS_ZONES, CONF_BYPASSABLE
+from .const import (
+    DOMAIN, 
+    OPTIONS_ZONES, 
+    CONF_BYPASSABLE,
+    CONF_ZONE_NAME,
+    CONF_ZONE_TYPE,   
+    DEFAULT_ZONE_OPTIONS
+)
 from .entity import AlarmDecoderEntity
 
 _LOGGER = logging.getLogger(__name__)
@@ -23,23 +30,37 @@ async def async_setup_entry(
 ) -> None:
     """Set up the AlarmDecoder zone switches."""
     controller = entry.runtime_data.client
-    zones = entry.options.get(OPTIONS_ZONES, {})  # Obtener de options
+    zones = entry.options.get(OPTIONS_ZONES, DEFAULT_ZONE_OPTIONS)  # Igual que binary_sensor
+    
+    # Debug temporal
+    _LOGGER.error(f"DEBUG SWITCH: Zones data: {zones}")
     
     switches = []
     
-    # Crear switches solo para zonas que soporten bypass
-    for zone_number, zone_config in zones.items():
-        if zone_config.get(CONF_BYPASSABLE, False):
+    # Usar la misma estructura que binary_sensor
+    for zone_num in zones:
+        zone_info = zones[zone_num]  # Cambiar zone_config por zone_info
+        _LOGGER.error(f"DEBUG SWITCH: Zone {zone_num} info: {zone_info}")
+        
+        # Verificar si la zona es bypassable usando la constante
+        if zone_info.get(CONF_BYPASSABLE, False):
+            _LOGGER.error(f"DEBUG SWITCH: Creating switch for zone {zone_num}")
             switch = AlarmDecoderZoneSwitch(
                 controller,
-                int(zone_number),
-                zone_config,
+                int(zone_num),
+                zone_info,  # Pasar zone_info en lugar de zone_config
                 entry.entry_id
             )
             switches.append(switch)
+        else:
+            _LOGGER.error(f"DEBUG SWITCH: Zone {zone_num} not bypassable")
+    
+    _LOGGER.error(f"DEBUG SWITCH: Total switches created: {len(switches)}")
     
     if switches:
         async_add_entities(switches)
+    else:
+        _LOGGER.error("DEBUG SWITCH: No switches to add")
 
 
 class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
@@ -62,7 +83,7 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
         self._is_bypassed = False
         
         # Configurar nombre personalizado si existe
-        if zone_name := zone_config.get("name"):
+        if zone_name := zone_config.get("name"):          # ← Debería ser CONF_ZONE_NAME
             self._attr_name = f"{zone_name} Bypass"
     
     
