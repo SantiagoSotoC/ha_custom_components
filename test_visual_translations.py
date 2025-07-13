@@ -175,6 +175,20 @@ def simulate_ui_flow():
     print(f"EN: entity_id: switch.zone_{zone_number}_bypass | name: '{en_switch_name}'")
     print(f"ES: entity_id: switch.zone_{zone_number}_bypass | name: '{es_switch_name}'")
     
+    # Simular estados del panel de alarma
+    print(f"\n🚨 ESTADOS DEL PANEL DE ALARMA:")
+    print("-" * 40)
+    
+    print("INGLÉS:")
+    for state in ["disarmed", "armed_away", "armed_home", "triggered"]:
+        en_state_name = en_data["entity"]["alarm_control_panel"]["state"][state]
+        print(f"  {state}: {en_state_name}")
+    
+    print("\nESPAÑOL:")
+    for state in ["disarmed", "armed_away", "armed_home", "triggered"]:
+        es_state_name = es_data["entity"]["alarm_control_panel"]["state"][state]
+        print(f"  {state}: {es_state_name}")
+    
     print("\n✅ SIMULACIÓN COMPLETADA")
 
 
