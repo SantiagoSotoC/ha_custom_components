@@ -25,11 +25,12 @@ class AlarmDecoderSensor(AlarmDecoderEntity, SensorEntity):
     """Representation of an AlarmDecoder keypad."""
 
     _attr_translation_key = "alarm_panel_display"
-    _attr_name = "Alarm Panel Display"
+    _attr_name = "Panel Display"
     _attr_should_poll = False
 
     def __init__(self, client):
         """Initialize the alarm decoder sensor."""
+        # Don't pass device_name or device_identifier to use main device
         super().__init__(client)
         self._attr_unique_id = f"{client.serial_number}-display"
 

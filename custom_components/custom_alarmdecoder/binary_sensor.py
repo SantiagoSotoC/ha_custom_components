@@ -88,11 +88,15 @@ class AlarmDecoderBinarySensor(AlarmDecoderEntity, BinarySensorEntity):
         relay_chan,
     ):
         """Initialize the binary_sensor."""
-        super().__init__(client)
-        self._attr_unique_id = f"{client.serial_number}-zone-{zone_number}"
+        # Create sub-device for the zone
+        device_name = f"Zone {zone_number} - {zone_name}"
+        device_identifier = f"{client.serial_number}-zone-{zone_number}"
+        super().__init__(client, device_name, device_identifier)
+        
+        self._attr_unique_id = f"{client.serial_number}-zone-{zone_number}-status"
         self._zone_number = int(zone_number)
         self._zone_type = zone_type
-        self._attr_name = zone_name
+        self._attr_name = "Status"  # Simple name since device provides context
         self._attr_is_on = False
         self._rfid = zone_rfid
         self._loop = zone_loop

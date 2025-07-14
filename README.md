@@ -25,6 +25,13 @@ This is a custom component for integrating AlarmDecoder with Home Assistant, all
 
 ## Current Features
 
+### ✅ Sub-Device Organization
+- **Improved device structure**: Organized device hierarchy for better UI experience
+- **Main device**: AlarmDecoder Panel contains panel-level entities (Panel Display, Alarm Panel)
+- **Zone sub-devices**: Each zone creates its own sub-device for better organization
+- **Grouped entities**: Zone status (binary sensor) and bypass control (switch) are grouped under each zone device
+- **Clean naming**: Simplified entity names since context is provided by the device structure
+
 ### ✅ Zone Bypass System
 - **Individual bypass switches**: Each configurable zone has its own Home Assistant switch entity
 - **Manual bypass control**: Toggle bypass status for individual zones from the UI
@@ -77,6 +84,28 @@ This is a custom component for integrating AlarmDecoder with Home Assistant, all
 
 ---
 
+## Device Structure
+
+The integration creates a well-organized device hierarchy:
+
+### Main Device: "AlarmDecoder Panel"
+Contains panel-level entities:
+- **Panel Display** (sensor) - Shows the current panel display text
+- **Alarm Panel** (alarm control panel) - Main alarm control interface
+
+### Zone Sub-Devices: "Zone X - [Zone Name]"
+Each configured zone creates its own sub-device containing:
+- **Status** (binary sensor) - Zone status (open/closed, fault/normal)
+- **Bypass** (switch) - Bypass control for the zone
+
+**Benefits:**
+- **Better organization**: Related entities are grouped together
+- **Cleaner UI**: Each zone appears as a separate device card in Home Assistant
+- **Easier management**: Users can manage zones individually
+- **Scalable**: Easy to add more entities per zone in the future
+
+---
+
 ## Installation
 
 ### HACS (Recommended)
@@ -115,13 +144,13 @@ This is a custom component for integrating AlarmDecoder with Home Assistant, all
 service: switch.turn_on
 target:
   entity_id: 
-    - switch.zone_1_bypass
-    - switch.zone_5_bypass
+    - switch.zone_1_front_door_bypass  # Note: actual entity names depend on your zone configuration
+    - switch.zone_5_kitchen_window_bypass
 
 # Then arm the system - bypasses will be applied automatically
 service: alarm_control_panel.alarm_arm_away
 target:
-  entity_id: alarm_control_panel.alarmdecoder
+  entity_id: alarm_control_panel.alarmdecoder_panel_alarm_panel
 data:
   code: "1234"
 ```
@@ -193,6 +222,8 @@ This project is open source and licensed under the **Apache License 2.0**, same 
 ## Changelog
 
 ### Current Version
+- ✅ **Sub-device organization**: Improved device structure with zone sub-devices
+- ✅ **Better UI organization**: Zone entities grouped under individual zone devices  
 - ✅ Functional zone bypass system (Honeywell panels)
 - ✅ Individual zone control switches
 - ✅ Auto-bypass support for faulted zones

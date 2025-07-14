@@ -114,7 +114,7 @@ class AlarmDecoderFlowHandler(ConfigFlow, domain=DOMAIN):
             except ValueError:
                 errors[CONF_KEYPADS] = "invalid_keypads"
 
-        schema = vol.Schema({vol.Required(CONF_KEYPADS): str})  # ej: "16,17,18"
+        schema = vol.Schema({vol.Required(CONF_KEYPADS): str})  # e.g.: "16,17,18"
 
         return self.async_show_form(
             step_id="keypads",
@@ -284,7 +284,7 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
 
         existing_zone_settings = self.zone_options.get(self.selected_zone, {})
 
-        # CORRECCIÓN: Convertir valores int a str para suggested_value
+        # CORRECTION: Convert int values to str for suggested_value
         def safe_str_value(key):
             value = existing_zone_settings.get(key)
             return str(value) if value is not None else None
@@ -315,19 +315,19 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
                     vol.Optional(
                         CONF_ZONE_LOOP,
                         description={
-                            "suggested_value": safe_str_value(CONF_ZONE_LOOP)  # ← CORREGIDO
+                            "suggested_value": safe_str_value(CONF_ZONE_LOOP)  # ← FIXED
                         },
                     ): str,
                     vol.Optional(
                         CONF_RELAY_ADDR,
                         description={
-                            "suggested_value": safe_str_value(CONF_RELAY_ADDR)  # ← CORREGIDO
+                            "suggested_value": safe_str_value(CONF_RELAY_ADDR)  # ← FIXED
                         },
                     ): str,
                     vol.Optional(
                         CONF_RELAY_CHAN,
                         description={
-                            "suggested_value": safe_str_value(CONF_RELAY_CHAN)  # ← CORREGIDO
+                            "suggested_value": safe_str_value(CONF_RELAY_CHAN)  # ← FIXED
                         },
                     ): str,
                     vol.Optional(

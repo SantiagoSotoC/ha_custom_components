@@ -30,25 +30,25 @@ async def async_setup_entry(
 ) -> None:
     """Set up the AlarmDecoder zone switches."""
     controller = entry.runtime_data.client
-    zones = entry.options.get(OPTIONS_ZONES, DEFAULT_ZONE_OPTIONS)  # Igual que binary_sensor
+    zones = entry.options.get(OPTIONS_ZONES, DEFAULT_ZONE_OPTIONS)  # Same as binary_sensor
     
-    # Debug temporal
+    # Temporary debug
     _LOGGER.error(f"DEBUG SWITCH: Zones data: {zones}")
     
     switches = []
     
-    # Usar la misma estructura que binary_sensor
+    # Use same structure as binary_sensor
     for zone_num in zones:
-        zone_info = zones[zone_num]  # Cambiar zone_config por zone_info
+        zone_info = zones[zone_num]  # Change zone_config to zone_info
         _LOGGER.error(f"DEBUG SWITCH: Zone {zone_num} info: {zone_info}")
         
-        # Verificar si la zona es bypassable usando la constante
+        # Check if zone is bypassable using constant
         if zone_info.get(CONF_BYPASSABLE, False):
             _LOGGER.error(f"DEBUG SWITCH: Creating switch for zone {zone_num}")
             switch = AlarmDecoderZoneSwitch(
                 controller,
                 int(zone_num),
-                zone_info,  # Pasar zone_info en lugar de zone_config
+                zone_info,  # Pass zone_info instead of zone_config
                 entry.entry_id
             )
             switches.append(switch)
@@ -74,58 +74,53 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
         entry_id: str,
     ) -> None:
         """Initialize the switch."""
-        super().__init__(controller)
+        # Create sub-device for zone (same as binary_sensor)
+        zone_name = zone_config.get(CONF_ZONE_NAME, f"Zone {zone_number}")
+        device_name = f"Zone {zone_number} - {zone_name}"
+        device_identifier = f"{controller.serial_number}-zone-{zone_number}"
+        super().__init__(controller, device_name, device_identifier)
         
         self._entry_id = entry_id
         self._zone_number = zone_number
         self._zone_config = zone_config
         
-        # Usar números sin ceros delante para unique_id y nombre
-        self._attr_unique_id = f"{entry_id}_{zone_number}_bypass"
+        # Use numbers without leading zeros for unique_id
+        self._attr_unique_id = f"{controller.serial_number}-zone-{zone_number}-bypass"
         self._attr_icon = "mdi:shield-check"
         self._is_bypassed = False
+        self._attr_is_on = False  # Initialize switch state
         
-        # Configurar nombre personalizado si existe, sino usar número de zona
-        if zone_name := zone_config.get(CONF_ZONE_NAME):
-            self._attr_name = f"{zone_name} Bypass"
-        else:
-            self._attr_name = f"Zone {zone_number} Bypass"
+        # Simple name since device provides context
+        self._attr_name = "Bypass"
         
-        # Definir translation_key para usar las traducciones
+        # Define translation_key to use translations
         self._attr_translation_key = "zone_bypass"
         self._attr_translation_placeholders = {"zone_number": str(zone_number)}
-    
-    @property
-    def is_on(self) -> bool | None:
-        """Return true if zone is marked for bypass."""
-        return self._is_bypassed
-    
+        
+        # Configure additional attributes
+        self._attr_extra_state_attributes = {
+            "zone_number": self._zone_number,
+            "zone_type": zone_config.get(CONF_ZONE_TYPE, "door_window"),
+            "zone_name": zone_config.get(CONF_ZONE_NAME, f"Zone {zone_number}"),
+            "marked_for_bypass": False,
+        }
+
     @property
     def zone_number(self) -> int:
         """Return the zone number."""
         return self._zone_number
     
-    @property
-    def extra_state_attributes(self) -> dict[str, Any] | None:
-        """Return additional state attributes."""
-        attrs = super().extra_state_attributes
-        if attrs is None:
-            attrs = {}
-        else:
-            attrs = dict(attrs)  # Crear una copia para evitar mutaciones
-        
-        attrs.update({
-            "zone_number": self._zone_number,
-            "zone_type": self._zone_config.get(CONF_ZONE_TYPE, "door_window"),
-            "zone_name": self._zone_config.get(CONF_ZONE_NAME, f"Zone {self._zone_number}"),
-            "marked_for_bypass": self._is_bypassed,
-        })
-        return attrs
-    
+    def _update_bypass_state(self) -> None:
+        """Update the bypass state and related attributes."""
+        self._attr_is_on = self._is_bypassed
+        if self._attr_extra_state_attributes:
+            self._attr_extra_state_attributes["marked_for_bypass"] = self._is_bypassed
+
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Mark zone for bypass on next arming."""
         self._is_bypassed = True
         self._attr_icon = "mdi:shield-off"
+        self._update_bypass_state()
         self.async_write_ha_state()
         _LOGGER.debug("Zone %s marked for bypass", self._zone_number)
     
@@ -133,6 +128,7 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
         """Unmark zone for bypass."""
         self._is_bypassed = False
         self._attr_icon = "mdi:shield-check"
+        self._update_bypass_state()
         self.async_write_ha_state()
         _LOGGER.debug("Zone %s unmarked for bypass", self._zone_number)
     
@@ -145,6 +141,6 @@ class AlarmDecoderZoneSwitch(AlarmDecoderEntity, SwitchEntity):
     
     def _message_callback(self, message) -> None:
         """Handle incoming AlarmDecoder messages to update bypass status."""
-        # No procesamos mensajes del panel para estos switches
-        # Solo mantienen el estado local para construcción de comandos
+        # We don't process panel messages for these switches
+        # They only maintain local state for command construction
         pass

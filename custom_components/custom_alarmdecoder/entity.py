@@ -11,12 +11,26 @@ class AlarmDecoderEntity(Entity):
 
     _attr_has_entity_name = True
 
-    def __init__(self, client):
+    def __init__(self, client, device_name=None, device_identifier=None):
         """Initialize the alarm decoder entity."""
         self._client = client
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, client.serial_number)},
-            manufacturer="NuTech",
-            serial_number=client.serial_number,
-            sw_version=client.version_number,
-        )
+        
+        # If device_name and device_identifier are provided, create a sub-device
+        if device_name and device_identifier:
+            self._attr_device_info = DeviceInfo(
+                identifiers={(DOMAIN, device_identifier)},
+                name=device_name,
+                manufacturer="NuTech",
+                model="Zone",
+                via_device=(DOMAIN, client.serial_number),
+            )
+        else:
+            # Main device (alarm panel)
+            self._attr_device_info = DeviceInfo(
+                identifiers={(DOMAIN, client.serial_number)},
+                name="AlarmDecoder Panel",
+                manufacturer="NuTech",
+                model="AlarmDecoder",
+                serial_number=client.serial_number,
+                sw_version=client.version_number,
+            )

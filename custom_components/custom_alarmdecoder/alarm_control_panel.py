@@ -7,6 +7,8 @@ import voluptuous as vol
 
 from homeassistant.components.alarm_control_panel import (
     AlarmControlPanelEntity,
+)
+from homeassistant.components.alarm_control_panel.const import (
     AlarmControlPanelEntityFeature,
     AlarmControlPanelState,
     CodeFormat,
@@ -47,7 +49,7 @@ async def async_setup_entry(
 
     keypads = entry.data.get("keypads")
     if not keypads:
-        return  # No crear entidades si no hay keypads configurados
+        return  # Don't create entities if no keypads configured
 
     entities = []
     for address in keypads:
@@ -57,7 +59,7 @@ async def async_setup_entry(
                 auto_bypass=arm_options[CONF_AUTO_BYPASS],
                 code_arm_required=arm_options[CONF_CODE_ARM_REQUIRED],
                 address=address,
-                entry_id=entry.entry_id,  # Agregar entry_id
+                entry_id=entry.entry_id,  # Add entry_id
             )
         )
     async_add_entities(entities)
@@ -93,6 +95,7 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
 
     def __init__(self, client, auto_bypass, code_arm_required, address, entry_id):
         """Initialize the alarm panel."""
+        # Don't pass device_name or device_identifier to use main device
         super().__init__(client)
         self._attr_unique_id = f"{client.serial_number}-panel"
         self._auto_bypass = auto_bypass
@@ -169,7 +172,7 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
                 # Obtener el estado actual del switch
                 state = self.hass.states.get(entity_id)
                 if state and state.state == "on":
-                    # Extraer número de zona del unique_id: "entry_id_ZONENUMBER_bypass"
+                    # Extract zone number from unique_id: "entry_id_ZONENUMBER_bypass"
                     try:
                         zone_str = entity.unique_id.split("_")[-2]
                         zone_num = int(zone_str)  # Convertir a int para bypass_zones
@@ -186,8 +189,8 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
         if not zones:
             return ""
         
-        # Nuevo formato: código + 6 + zonas a bypass + *
-        # Las zonas nunca deben tener ceros a la izquierda (1, no 01; 11, no 011)
+        # New format: code + 6 + zones to bypass + *
+        # Zones should never have leading zeros (1, not 01; 11, not 011)
         zones_str = "".join([str(zone) for zone in zones])
         bypass_string = f"{code}6{zones_str}*"
         
@@ -205,16 +208,16 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
 
     def alarm_arm_away(self, code: str | None = None) -> None:
         """Send arm away command."""
-        # Obtener zonas marcadas para bypass
+        # Get zones marked for bypass
         bypass_zones = self._get_bypass_zones()
         
         if bypass_zones:
             _LOGGER.info("Arming away with bypassed zones: %s", bypass_zones)
-            # Enviar comando de bypass: código + 6 + zonas + *
+            # Send bypass command: code + 6 + zones + *
             bypass_command = self._build_bypass_string(bypass_zones, code or "")
             _LOGGER.debug("Sending bypass command: '%s'", bypass_command)
             self._client.send(bypass_command)
-            # Luego enviar comando de armado away
+            # Then send arm away command
             self._client.arm_away(
                 code=code,
                 code_arm_required=self._attr_code_arm_required,
@@ -236,11 +239,11 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
         
         if bypass_zones:
             _LOGGER.info("Arming home with bypassed zones: %s", bypass_zones)
-            # Enviar comando de bypass: código + 6 + zonas + *
+            # Send bypass command: code + 6 + zones + *
             bypass_command = self._build_bypass_string(bypass_zones, code or "")
             _LOGGER.debug("Sending bypass command: '%s'", bypass_command)
             self._client.send(bypass_command)
-            # Luego enviar comando de armado home
+            # Then send arm home command
             arm_command = f"{code or ''}3"
             _LOGGER.debug("Sending arm home command: '%s'", arm_command)
             self._client.arm_home(
