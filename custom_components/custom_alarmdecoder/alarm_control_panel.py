@@ -20,10 +20,6 @@ from homeassistant.helpers import entity_registry as er
 
 from . import AlarmDecoderConfigEntry
 from .const import (
-    CONF_AUTO_BYPASS,
-    CONF_CODE_ARM_REQUIRED,
-    DEFAULT_ARM_OPTIONS,
-    OPTIONS_ARM,
     SIGNAL_PANEL_MESSAGE,
 )
 from .entity import AlarmDecoderEntity
@@ -42,10 +38,11 @@ async def async_setup_entry(
     async_add_entities: AddConfigEntryEntitiesCallback,
 ) -> None:
     """Set up for AlarmDecoder alarm panels."""
-    options = entry.options
-    arm_options = options.get(OPTIONS_ARM, DEFAULT_ARM_OPTIONS)
+    # Usar configuración de runtime_data
+    auto_bypass = entry.runtime_data.auto_bypass
+    code_arm_required = entry.runtime_data.code_arm_required
+    keypads = entry.runtime_data.keypads
 
-    keypads = entry.data.get("keypads")
     if not keypads:
         return  # No crear entidades si no hay keypads configurados
 
@@ -54,8 +51,8 @@ async def async_setup_entry(
         entities.append(
             AlarmDecoderAlarmPanel(
                 client=entry.runtime_data.client,
-                auto_bypass=arm_options[CONF_AUTO_BYPASS],
-                code_arm_required=arm_options[CONF_CODE_ARM_REQUIRED],
+                auto_bypass=auto_bypass,
+                code_arm_required=code_arm_required,
                 address=address,
                 entry_id=entry.entry_id,  # Agregar entry_id
             )
@@ -159,13 +156,15 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
         """Get list of zones marked for bypass."""
         entity_reg = er.async_get(self.hass)
         bypass_zones = []
-        
+
         # Buscar todos los switches de bypass activos en este config entry
         for entity_id, entity in entity_reg.entities.items():
-            if (entity.config_entry_id == self._entry_id and 
-                entity.domain == "switch" and 
-                "_bypass" in entity.unique_id):
-                
+            if (
+                entity.config_entry_id == self._entry_id
+                and entity.domain == "switch"
+                and "_bypass" in entity.unique_id
+            ):
+
                 # Obtener el estado actual del switch
                 state = self.hass.states.get(entity_id)
                 if state and state.state == "on":
@@ -176,26 +175,31 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
                         bypass_zones.append(zone_num)
                         _LOGGER.debug("Zone %s marked for bypass", zone_num)
                     except (ValueError, IndexError):
-                        _LOGGER.warning("Could not extract zone number from entity %s", entity_id)
-        
+                        _LOGGER.warning(
+                            "Could not extract zone number from entity %s", entity_id
+                        )
+
         _LOGGER.debug("Total bypass zones found: %s", sorted(bypass_zones))
         return sorted(bypass_zones)
-    
+
     def _build_bypass_string(self, zones: list[int], code: str = "") -> str:
         """Build bypass string for the given zones."""
         if not zones:
             return ""
-        
+
         # Nuevo formato: código + 6 + zonas a bypass + *
         # Las zonas nunca deben tener ceros a la izquierda (1, no 01; 11, no 011)
         zones_str = "".join([str(zone) for zone in zones])
         bypass_string = f"{code}6{zones_str}*"
-        
+
         _LOGGER.debug(
             "Building bypass string - Code: '%s', Zones: %s, Zones string: '%s', Final: '%s'",
-            code, zones, zones_str, bypass_string
+            code,
+            zones,
+            zones_str,
+            bypass_string,
         )
-        
+
         return bypass_string
 
     def alarm_disarm(self, code: str | None = None) -> None:
@@ -207,7 +211,7 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
         """Send arm away command."""
         # Obtener zonas marcadas para bypass
         bypass_zones = self._get_bypass_zones()
-        
+
         if bypass_zones:
             _LOGGER.info("Arming away with bypassed zones: %s", bypass_zones)
             # Enviar comando de bypass: código + 6 + zonas + *
@@ -228,12 +232,11 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
                 auto_bypass=self._auto_bypass,
             )
 
-
     def alarm_arm_home(self, code: str | None = None) -> None:
         """Send arm home command."""
         # Obtener zonas marcadas para bypass
         bypass_zones = self._get_bypass_zones()
-        
+
         if bypass_zones:
             _LOGGER.info("Arming home with bypassed zones: %s", bypass_zones)
             # Enviar comando de bypass: código + 6 + zonas + *

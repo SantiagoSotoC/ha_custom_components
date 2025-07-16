@@ -16,8 +16,6 @@ from .const import (
     CONF_ZONE_NUMBER,
     CONF_ZONE_RFID,
     CONF_ZONE_TYPE,
-    DEFAULT_ZONE_OPTIONS,
-    OPTIONS_ZONES,
     SIGNAL_REL_MESSAGE,
     SIGNAL_RFX_MESSAGE,
     SIGNAL_ZONE_FAULT,
@@ -45,11 +43,10 @@ async def async_setup_entry(
     """Set up for AlarmDecoder sensor."""
 
     client = entry.runtime_data.client
-    zones = entry.options.get(OPTIONS_ZONES, DEFAULT_ZONE_OPTIONS)
+    zones = entry.runtime_data.zones  # Usar zones de runtime_data
 
     entities = []
-    for zone_num in zones:
-        zone_info = zones[zone_num]
+    for zone_num, zone_info in zones.items():
         zone_type = zone_info[CONF_ZONE_TYPE]
         zone_name = zone_info[CONF_ZONE_NAME]
         zone_rfid = zone_info.get(CONF_ZONE_RFID)

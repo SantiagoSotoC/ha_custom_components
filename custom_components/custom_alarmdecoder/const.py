@@ -1,5 +1,6 @@
 """Constants for the AlarmDecoder component."""
 
+# Basic configuration
 CONF_AUTO_BYPASS = "auto_bypass"
 CONF_CODE_ARM_REQUIRED = "code_arm_required"
 CONF_DEVICE_BAUD = "device_baudrate"
@@ -11,7 +12,13 @@ CONF_ZONE_NAME = "zone_name"
 CONF_ZONE_NUMBER = "zone_number"
 CONF_ZONE_RFID = "zone_rfid"
 CONF_ZONE_TYPE = "zone_type"
+CONF_BYPASSABLE = "bypassable"
 
+# YAML Configuration
+CONF_ZONES = "zones"
+CONF_KEYPADS = "keypads"
+
+# Default values
 DEFAULT_AUTO_BYPASS = False
 DEFAULT_CODE_ARM_REQUIRED = True
 DEFAULT_DEVICE_BAUD = 115200
@@ -19,8 +26,22 @@ DEFAULT_DEVICE_HOST = "alarmdecoder"
 DEFAULT_DEVICE_PATH = "/dev/ttyUSB0"
 DEFAULT_DEVICE_PORT = 10000
 DEFAULT_ZONE_TYPE = "window"
-CONF_KEYPADS = "keypads"
 
+# Zone types
+ZONE_TYPES = [
+    "door",
+    "window",
+    "motion",
+    "smoke",
+    "glass",
+    "co",
+    "flood",
+    "gas",
+    "heat",
+    "medical",
+    "freeze",
+    "generic",
+]
 
 DEFAULT_ARM_OPTIONS = {
     CONF_AUTO_BYPASS: DEFAULT_AUTO_BYPASS,
@@ -41,5 +62,3 @@ SIGNAL_REL_MESSAGE = "alarmdecoder.rel_message"
 SIGNAL_RFX_MESSAGE = "alarmdecoder.rfx_message"
 SIGNAL_ZONE_FAULT = "alarmdecoder.zone_fault"
 SIGNAL_ZONE_RESTORE = "alarmdecoder.zone_restore"
-
-CONF_BYPASSABLE = "bypassable"

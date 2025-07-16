@@ -4,10 +4,12 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import timedelta
 import logging
+from typing import Any
 
 from adext import AdExt
 from alarmdecoder.devices import SerialDevice, SocketDevice
 from alarmdecoder.util import NoDeviceError
+import voluptuous as vol
 
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
@@ -20,10 +22,24 @@ from homeassistant.const import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.dispatcher import dispatcher_send
 from homeassistant.helpers.event import async_call_later
+import homeassistant.helpers.config_validation as cv
 
 from .const import (
+    CONF_AUTO_BYPASS,
+    CONF_BYPASSABLE,
+    CONF_CODE_ARM_REQUIRED,
     CONF_DEVICE_BAUD,
     CONF_DEVICE_PATH,
+    CONF_KEYPADS,
+    CONF_ZONE_LOOP,
+    CONF_ZONE_NAME,
+    CONF_ZONE_RFID,
+    CONF_ZONE_TYPE,
+    CONF_ZONES,
+    DEFAULT_AUTO_BYPASS,
+    DEFAULT_CODE_ARM_REQUIRED,
+    DEFAULT_ZONE_TYPE,
+    DOMAIN,
     PROTOCOL_SERIAL,
     PROTOCOL_SOCKET,
     SIGNAL_PANEL_MESSAGE,
@@ -31,6 +47,7 @@ from .const import (
     SIGNAL_RFX_MESSAGE,
     SIGNAL_ZONE_FAULT,
     SIGNAL_ZONE_RESTORE,
+    ZONE_TYPES,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -41,6 +58,42 @@ PLATFORMS = [
     Platform.SENSOR,
     Platform.SWITCH,
 ]
+
+# YAML Configuration Schema
+ZONE_SCHEMA = vol.Schema(
+    {
+        vol.Required(CONF_ZONE_NAME): cv.string,
+        vol.Optional(CONF_ZONE_TYPE, default=DEFAULT_ZONE_TYPE): vol.In(ZONE_TYPES),
+        vol.Optional(CONF_ZONE_RFID): cv.positive_int,
+        vol.Optional(CONF_ZONE_LOOP): cv.positive_int,
+        vol.Optional(CONF_BYPASSABLE, default=False): cv.boolean,
+    }
+)
+
+CONFIG_SCHEMA = vol.Schema(
+    {
+        DOMAIN: vol.Schema(
+            {
+                vol.Required(CONF_PROTOCOL): vol.In(["socket", "serial"]),
+                vol.Optional(CONF_HOST): cv.string,
+                vol.Optional(CONF_PORT): cv.port,
+                vol.Optional(CONF_DEVICE_PATH): cv.string,
+                vol.Optional(CONF_DEVICE_BAUD): cv.positive_int,
+                vol.Optional(CONF_AUTO_BYPASS, default=DEFAULT_AUTO_BYPASS): cv.boolean,
+                vol.Optional(
+                    CONF_CODE_ARM_REQUIRED, default=DEFAULT_CODE_ARM_REQUIRED
+                ): cv.boolean,
+                vol.Optional(CONF_KEYPADS, default=[0]): vol.All(
+                    cv.ensure_list, [cv.positive_int]
+                ),
+                vol.Optional(CONF_ZONES, default={}): vol.Schema(
+                    {cv.positive_int: ZONE_SCHEMA}
+                ),
+            }
+        )
+    },
+    extra=vol.ALLOW_EXTRA,
+)
 
 type AlarmDecoderConfigEntry = ConfigEntry[AlarmDecoderData]
 
@@ -53,6 +106,22 @@ class AlarmDecoderData:
     remove_update_listener: Callable[[], None]
     remove_stop_listener: Callable[[], None]
     restart: bool
+    zones: dict[int, dict[str, Any]]
+    keypads: list[int]
+    auto_bypass: bool
+    code_arm_required: bool
+
+
+async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:
+    """Set up the AlarmDecoder integration from YAML."""
+    if DOMAIN not in config:
+        return True
+
+    # Store YAML config for later use
+    hass.data.setdefault(DOMAIN, {})
+    hass.data[DOMAIN]["yaml_config"] = config[DOMAIN]
+
+    return True
 
 
 async def async_setup_entry(
@@ -63,6 +132,17 @@ async def async_setup_entry(
 
     ad_connection = entry.data
     protocol = ad_connection[CONF_PROTOCOL]
+
+    # Merge YAML config with config entry data if available
+    yaml_config = hass.data.get(DOMAIN, {}).get("yaml_config", {})
+
+    # Use YAML config for zones and advanced settings
+    zones = yaml_config.get(CONF_ZONES, {})
+    keypads = yaml_config.get(CONF_KEYPADS, [0])
+    auto_bypass = yaml_config.get(CONF_AUTO_BYPASS, DEFAULT_AUTO_BYPASS)
+    code_arm_required = yaml_config.get(
+        CONF_CODE_ARM_REQUIRED, DEFAULT_CODE_ARM_REQUIRED
+    )
 
     def stop_alarmdecoder(event):
         """Handle the shutdown of AlarmDecoder."""
@@ -98,6 +178,7 @@ async def async_setup_entry(
     def handle_rfx_message(sender, message):
         """Handle RFX message from AlarmDecoder."""
         dispatcher_send(hass, SIGNAL_RFX_MESSAGE, message)
+        dispatcher_send(hass, SIGNAL_RFX_MESSAGE, message)
 
     def zone_fault_callback(sender, zone):
         """Handle zone fault from AlarmDecoder."""
@@ -132,7 +213,14 @@ async def async_setup_entry(
     )
 
     entry.runtime_data = AlarmDecoderData(
-        controller, undo_listener, remove_stop_listener, False
+        client=controller,
+        remove_update_listener=undo_listener,
+        remove_stop_listener=remove_stop_listener,
+        restart=False,
+        zones=zones,
+        keypads=keypads,
+        auto_bypass=auto_bypass,
+        code_arm_required=code_arm_required,
     )
 
     await open_connection()

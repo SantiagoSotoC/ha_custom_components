@@ -1,0 +1,60 @@
+# Ejemplo de configuración YAML para AlarmDecoder
+
+# Agregar esto a tu configuration.yaml:
+
+custom_alarmdecoder:
+  protocol: socket
+  host: 192.168.1.100
+  port: 10000
+  auto_bypass: false
+  code_arm_required: true
+  keypads: [0]
+  zones:
+    1:
+      name: "Puerta Principal"
+      type: "door"
+      bypassable: true
+    2:
+      name: "Ventana Sala"
+      type: "window"
+      bypassable: true
+    3:
+      name: "Detector de Movimiento"
+      type: "motion"
+      bypassable: true
+    4:
+      name: "Detector de Humo"
+      type: "smoke"
+      bypassable: false
+# Para protocolo serial, usar esto en su lugar:
+# custom_alarmdecoder:
+#   protocol: serial
+#   device_path: /dev/ttyUSB0
+#   device_baudrate: 115200
+#   auto_bypass: false
+#   code_arm_required: true
+#   keypads: [0]
+#   zones:
+#     1:
+#       name: "Puerta Principal"
+#       type: "door"
+#       bypassable: true
+
+# Tipos de zona disponibles:
+# - door
+# - window
+# - motion
+# - smoke
+# - glass
+# - co
+# - flood
+# - gas
+# - heat
+# - medical
+# - freeze
+# - generic
+
+# Opciones adicionales por zona:
+# - rfid: Dirección RFID (número)
+# - loop: Número de bucle (número)
+# - bypassable: Si la zona puede ser bypaseada (true/false)
