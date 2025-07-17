@@ -136,7 +136,7 @@ async def async_setup_entry(
     # Merge YAML config with config entry data if available
     yaml_config = hass.data.get(DOMAIN, {}).get("yaml_config", {})
 
-    # Use YAML config for zones and advanced settings
+    # Use YAML config for zones and advanced settings (no mapping needed now)
     zones = yaml_config.get(CONF_ZONES, {})
     keypads = yaml_config.get(CONF_KEYPADS, [0])
     auto_bypass = yaml_config.get(CONF_AUTO_BYPASS, DEFAULT_AUTO_BYPASS)

@@ -8,20 +8,18 @@ This is a custom component for integrating AlarmDecoder with Home Assistant, all
 
 ## Installation and Configuration
 
-### YAML Configuration
+## Configuration Examples
 
-This integration is now configured via YAML in your `configuration.yaml` file. Add the following configuration:
+### Basic Socket Configuration
 
 ```yaml
 custom_alarmdecoder:
-  protocol: socket # or "serial"
-  host: 192.168.1.100 # for socket protocol
-  port: 10000 # for socket protocol
-  # device_path: /dev/ttyUSB0  # for serial protocol
-  # device_baudrate: 115200  # for serial protocol
+  protocol: socket
+  host: 192.168.1.100
+  port: 10000
   auto_bypass: false
   code_arm_required: true
-  keypads: [0, 1] # List of keypad addresses
+  keypads: [0]
   zones:
     1:
       name: "Front Door"
@@ -35,12 +33,251 @@ custom_alarmdecoder:
       name: "Living Room Motion"
       type: "motion"
       bypassable: true
-      rfid: 1
-      loop: 1
+```
+
+### Serial Configuration
+
+```yaml
+custom_alarmdecoder:
+  protocol: serial
+  device_path: /dev/ttyUSB0
+  device_baudrate: 115200
+  auto_bypass: false
+  code_arm_required: true
+  keypads: [0]
+  zones:
+    1:
+      name: "Main Entrance"
+      type: "door"
+      bypassable: true
+```
+
+### Advanced Configuration with RF Devices
+
+```yaml
+custom_alarmdecoder:
+  protocol: socket
+  host: 192.168.1.100
+  port: 10000
+  auto_bypass: true # Automatically bypass faulted zones
+  code_arm_required: false # No code required for arming
+  keypads: [0, 16, 17] # Multiple keypads
+  zones:
+    # Wired zones
+    1:
+      name: "Front Door"
+      type: "door"
+      bypassable: true
+    2:
+      name: "Back Door"
+      type: "door"
+      bypassable: true
+    3:
+      name: "Garage Door"
+      type: "door"
+      bypassable: true
+
+    # RF devices with RFID and loop
     10:
+      name: "Living Room Motion"
+      type: "motion"
+      bypassable: true
+      rfid: 0123456 # RF device serial number
+      loop: 1 # Specific loop to monitor
+
+    11:
+      name: "Kitchen Smoke Detector"
+      type: "smoke"
+      bypassable: false # Safety device - cannot bypass
+      rfid: 0987654
+      loop: 1
+
+    12:
+      name: "Bedroom Window"
+      type: "window"
+      bypassable: true
+      rfid: 1122334
+      loop: 2
+
+    # Glass break detector
+    15:
+      name: "Patio Glass Break"
+      type: "glass"
+      bypassable: true
+      rfid: 5566778
+      loop: 1
+
+    # Environmental sensors
+    20:
+      name: "Basement Flood Sensor"
+      type: "flood"
+      bypassable: false
+      rfid: 9988776
+      loop: 1
+
+    21:
+      name: "CO Detector Kitchen"
+      type: "co"
+      bypassable: false
+      rfid: 1357924
+      loop: 1
+```
+
+### Home Security System Configuration
+
+```yaml
+custom_alarmdecoder:
+  protocol: socket
+  host: 192.168.1.50
+  port: 10000
+  auto_bypass: false
+  code_arm_required: true
+  keypads: [0, 16] # Main panel + wireless keypad
+  zones:
+    # Entry points
+    1:
+      name: "Front Door"
+      type: "door"
+      bypassable: true
+    2:
+      name: "Back Door"
+      type: "door"
+      bypassable: true
+    3:
+      name: "Garage Side Door"
+      type: "door"
+      bypassable: true
+
+    # Windows
+    10:
+      name: "Living Room Window"
+      type: "window"
+      bypassable: true
+    11:
       name: "Kitchen Window"
       type: "window"
+      bypassable: true
+    12:
+      name: "Master Bedroom Window"
+      type: "window"
+      bypassable: true
+
+    # Motion detectors
+    20:
+      name: "Hallway Motion"
+      type: "motion"
+      bypassable: true
+      rfid: 1111111
+      loop: 1
+    21:
+      name: "Living Room Motion"
+      type: "motion"
+      bypassable: true
+      rfid: 2222222
+      loop: 1
+
+    # Safety devices (non-bypassable)
+    30:
+      name: "Smoke Detector"
+      type: "smoke"
       bypassable: false
+      rfid: 3333333
+      loop: 1
+    31:
+      name: "CO Detector"
+      type: "co"
+      bypassable: false
+      rfid: 4444444
+      loop: 1
+```
+
+### Small Apartment Configuration
+
+```yaml
+custom_alarmdecoder:
+  protocol: socket
+  host: 192.168.1.100
+  port: 10000
+  auto_bypass: true
+  code_arm_required: false
+  keypads: [0]
+  zones:
+    1:
+      name: "Apartment Door"
+      type: "door"
+      bypassable: true
+    2:
+      name: "Balcony Door"
+      type: "door"
+      bypassable: true
+    3:
+      name: "Motion Detector"
+      type: "motion"
+      bypassable: true
+      rfid: 1234567
+      loop: 1
+```
+
+### Business/Office Configuration
+
+```yaml
+custom_alarmdecoder:
+  protocol: socket
+  host: 192.168.100.50
+  port: 10000
+  auto_bypass: false
+  code_arm_required: true
+  keypads: [0, 16, 17, 18] # Multiple zones/areas
+  zones:
+    # Main entrance
+    1:
+      name: "Main Entrance"
+      type: "door"
+      bypassable: false # Main entrance cannot be bypassed
+
+    # Secondary entrances
+    2:
+      name: "Back Entrance"
+      type: "door"
+      bypassable: true
+    3:
+      name: "Emergency Exit"
+      type: "door"
+      bypassable: true
+
+    # Office areas
+    10:
+      name: "Reception Motion"
+      type: "motion"
+      bypassable: true
+      rfid: 1001001
+      loop: 1
+    11:
+      name: "Office Area Motion"
+      type: "motion"
+      bypassable: true
+      rfid: 1001002
+      loop: 1
+
+    # Server room (high security)
+    20:
+      name: "Server Room Door"
+      type: "door"
+      bypassable: false
+    21:
+      name: "Server Room Motion"
+      type: "motion"
+      bypassable: false
+      rfid: 2002002
+      loop: 1
+
+    # Safety systems
+    30:
+      name: "Fire Detection"
+      type: "smoke"
+      bypassable: false
+      rfid: 3003003
+      loop: 1
 ```
 
 ### Configuration Options
@@ -300,3 +537,213 @@ This project is open source and licensed under the **Apache License 2.0**, same 
 ## Disclaimer
 
 This integration has been developed and tested specifically with Honeywell Vista panels. While it may work with other panel types, compatibility is not guaranteed. Use at your own risk and always test thoroughly in a safe environment before deploying in production.
+
+## Configuration Reference
+
+### Protocol Options
+
+#### Socket Protocol (TCP/IP)
+
+```yaml
+custom_alarmdecoder:
+  protocol: socket
+  host: 192.168.1.100 # IP address of AlarmDecoder device
+  port: 10000 # Port number (default: 10000)
+```
+
+#### Serial Protocol (USB/RS232)
+
+```yaml
+custom_alarmdecoder:
+  protocol: serial
+  device_path: /dev/ttyUSB0 # Serial device path
+  device_baudrate: 115200 # Baud rate (default: 115200)
+```
+
+### Advanced Options
+
+#### Auto Bypass
+
+- `auto_bypass: true` - Automatically bypass faulted zones when arming
+- `auto_bypass: false` - Require manual bypass of faulted zones (default)
+
+#### Code Requirements
+
+- `code_arm_required: true` - Require alarm code for arming (default)
+- `code_arm_required: false` - Allow arming without code
+
+#### Multiple Keypads
+
+```yaml
+keypads: [0]          # Single keypad (default)
+keypads: [0, 16, 17]  # Multiple keypads by address
+```
+
+Common keypad addresses:
+
+- `0` - Main panel
+- `16-31` - Wireless keypads (6160RF, 6150RF)
+- `1-8` - Hardwired keypads
+
+### Zone Types and Usage
+
+#### Entry/Exit Zones
+
+```yaml
+zones:
+  1:
+    name: "Front Door"
+    type: "door" # Entry/exit delay
+    bypassable: true
+```
+
+#### Perimeter Protection
+
+```yaml
+zones:
+  10:
+    name: "Living Room Window"
+    type: "window" # Instant alarm
+    bypassable: true
+  15:
+    name: "Patio Glass"
+    type: "glass" # Glass break detection
+    bypassable: true
+```
+
+#### Interior Protection
+
+```yaml
+zones:
+  20:
+    name: "Hallway Motion"
+    type: "motion" # Motion detection
+    bypassable: true
+```
+
+#### Safety Devices (Non-Bypassable)
+
+```yaml
+zones:
+  30:
+    name: "Smoke Detector"
+    type: "smoke" # Fire detection
+    bypassable: false # Cannot be bypassed for safety
+  31:
+    name: "CO Detector"
+    type: "co" # Carbon monoxide
+    bypassable: false
+  32:
+    name: "Flood Sensor"
+    type: "flood" # Water detection
+    bypassable: false
+```
+
+#### Specialized Zones
+
+```yaml
+zones:
+  40:
+    name: "Panic Button"
+    type: "medical" # Medical emergency
+    bypassable: false
+  41:
+    name: "High Temp Sensor"
+    type: "heat" # Heat detection
+    bypassable: false
+  42:
+    name: "Freeze Sensor"
+    type: "freeze" # Low temperature
+    bypassable: false
+  43:
+    name: "Gas Detector"
+    type: "gas" # Gas leak detection
+    bypassable: false
+```
+
+### RF Device Configuration
+
+#### Basic RF Zone
+
+```yaml
+zones:
+  50:
+    name: "Wireless Motion"
+    type: "motion"
+    bypassable: true
+    rfid: 1234567 # 7-digit RF device serial number
+    loop: 1 # Loop number (1-4)
+```
+
+#### Multi-Loop RF Device
+
+```yaml
+zones:
+  51:
+    name: "4-Zone RF Receiver"
+    type: "generic"
+    bypassable: true
+    rfid: 9876543
+    loop: 1 # Monitor only loop 1
+  52:
+    name: "Same Device Loop 2"
+    type: "motion"
+    bypassable: true
+    rfid: 9876543 # Same device
+    loop: 2 # Different loop
+```
+
+#### RF Device with Supervision
+
+```yaml
+zones:
+  55:
+    name: "Supervised Motion"
+    type: "motion"
+    bypassable: true
+    rfid: 5555555
+    loop: 1
+    # Device will report battery status and supervision
+```
+
+### Real-World Examples
+
+#### Typical Home Setup
+
+- **Zones 1-9**: Doors and main entry points
+- **Zones 10-19**: Windows and perimeter
+- **Zones 20-29**: Interior motion detectors
+- **Zones 30-39**: Safety devices (smoke, CO)
+- **Zones 40+**: RF devices and specialized sensors
+
+#### Zone Numbering Best Practices
+
+```yaml
+zones:
+  # Entry points (1-9)
+  1: { name: "Front Door", type: "door", bypassable: true }
+  2: { name: "Back Door", type: "door", bypassable: true }
+  3: { name: "Garage Door", type: "door", bypassable: true }
+
+  # Windows (10-19)
+  10: { name: "Living Room Window", type: "window", bypassable: true }
+  11: { name: "Kitchen Window", type: "window", bypassable: true }
+
+  # Motion detectors (20-29)
+  20: { name: "Hallway Motion", type: "motion", bypassable: true }
+  21: { name: "Living Room Motion", type: "motion", bypassable: true }
+
+  # Safety devices (30-39)
+  30: { name: "Smoke Detector", type: "smoke", bypassable: false }
+  31: { name: "CO Detector", type: "co", bypassable: false }
+
+  # RF devices (40+)
+  40:
+    {
+      name: "Wireless Motion",
+      type: "motion",
+      bypassable: true,
+      rfid: 1234567,
+      loop: 1,
+    }
+```
