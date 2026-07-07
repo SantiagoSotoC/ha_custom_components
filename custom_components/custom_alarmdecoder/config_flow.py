@@ -24,26 +24,33 @@ from homeassistant.core import callback
 
 from .const import (
     CONF_AUTO_BYPASS,
+    CONF_AUTO_DETECT_ZONES,
     CONF_CODE_ARM_REQUIRED,
     CONF_DEVICE_BAUD,
     CONF_DEVICE_PATH,
+    CONF_ENTRY_DELAY,
     CONF_KEYPADS,
     CONF_RELAY_ADDR,
     CONF_RELAY_CHAN,
+    CONF_SCAN_PANEL,
     CONF_ZONE_LOOP,
     CONF_ZONE_NAME,
     CONF_ZONE_NUMBER,
     CONF_ZONE_RFID,
     CONF_ZONE_TYPE,
     DEFAULT_ARM_OPTIONS,
+    DEFAULT_AUTO_DETECT_ZONES,
     DEFAULT_DEVICE_BAUD,
     DEFAULT_DEVICE_HOST,
     DEFAULT_DEVICE_PATH,
     DEFAULT_DEVICE_PORT,
+    DEFAULT_ENTRY_DELAY,
+    DEFAULT_SCAN_PANEL,
     DEFAULT_ZONE_OPTIONS,
     DEFAULT_ZONE_TYPE,
     DOMAIN,
     OPTIONS_ARM,
+    OPTIONS_KEYPADS,
     OPTIONS_ZONES,
     PROTOCOL_SERIAL,
     PROTOCOL_SOCKET,
@@ -51,8 +58,9 @@ from .const import (
 )
 
 EDIT_KEY = "edit_selection"
-EDIT_ZONES = "Zones"
+EDIT_KEYPADS = "Keypads"
 EDIT_SETTINGS = "Arming Settings"
+EDIT_ZONES = "Zones"
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -197,12 +205,18 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
         self.zone_options = config_entry.options.get(
             OPTIONS_ZONES, DEFAULT_ZONE_OPTIONS
         )
+        # Keypads: prefer options, fallback to data for backwards compatibility
+        self.keypad_options = config_entry.options.get(
+            OPTIONS_KEYPADS, config_entry.data.get(CONF_KEYPADS, [])
+        )
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
     ) -> ConfigFlowResult:
         """Manage the options."""
         if user_input is not None:
+            if user_input[EDIT_KEY] == EDIT_KEYPADS:
+                return await self.async_step_keypads()
             if user_input[EDIT_KEY] == EDIT_SETTINGS:
                 return await self.async_step_arm_settings()
             if user_input[EDIT_KEY] == EDIT_ZONES:
@@ -212,11 +226,54 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
             step_id="init",
             data_schema=vol.Schema(
                 {
-                    vol.Required(EDIT_KEY, default=EDIT_SETTINGS): vol.In(
-                        [EDIT_SETTINGS, EDIT_ZONES]
+                    vol.Required(EDIT_KEY, default=EDIT_KEYPADS): vol.In(
+                        [EDIT_KEYPADS, EDIT_SETTINGS, EDIT_ZONES]
                     )
                 },
             ),
+        )
+
+    async def async_step_keypads(
+        self, user_input: dict[str, Any] | None = None
+    ) -> ConfigFlowResult:
+        """Keypad addresses form."""
+        errors = {}
+
+        if user_input is not None:
+            try:
+                keypads_raw = user_input[CONF_KEYPADS]
+                keypad_list = [
+                    int(k.strip()) for k in keypads_raw.split(",") if k.strip()
+                ]
+                if not keypad_list:
+                    errors[CONF_KEYPADS] = "invalid_keypads"
+                else:
+                    self.keypad_options = keypad_list
+                    return self.async_create_entry(
+                        title="",
+                        data={
+                            OPTIONS_KEYPADS: keypad_list,
+                            OPTIONS_ARM: self.arm_options,
+                            OPTIONS_ZONES: self.zone_options,
+                        },
+                    )
+            except ValueError:
+                errors[CONF_KEYPADS] = "invalid_keypads"
+
+        current_keypads = ",".join(str(k) for k in self.keypad_options)
+        schema = vol.Schema(
+            {
+                vol.Required(
+                    CONF_KEYPADS,
+                    default=current_keypads or "18",
+                ): str,
+            }
+        )
+
+        return self.async_show_form(
+            step_id="keypads",
+            data_schema=schema,
+            errors=errors,
         )
 
     async def async_step_arm_settings(
@@ -240,6 +297,22 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
                         CONF_CODE_ARM_REQUIRED,
                         default=self.arm_options[CONF_CODE_ARM_REQUIRED],
                     ): bool,
+                    vol.Optional(
+                        CONF_AUTO_DETECT_ZONES,
+                        default=self.arm_options.get(
+                            CONF_AUTO_DETECT_ZONES, DEFAULT_AUTO_DETECT_ZONES
+                        ),
+                    ): bool,
+                    vol.Optional(
+                        CONF_SCAN_PANEL,
+                        default=self.arm_options.get(
+                            CONF_SCAN_PANEL, DEFAULT_SCAN_PANEL
+                        ),
+                    ): bool,
+                    vol.Optional(
+                        "alarm_code",
+                        default=self.arm_options.get("alarm_code", ""),
+                    ): str,
                 },
             ),
         )
@@ -260,7 +333,6 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
             data_schema=vol.Schema({vol.Required(CONF_ZONE_NUMBER): str}),
             errors=errors,
         )
-
 
     async def async_step_zone_details(
         self, user_input: dict[str, Any] | None = None
@@ -334,11 +406,16 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
                         CONF_BYPASSABLE,
                         default=existing_zone_settings.get(CONF_BYPASSABLE, False),
                     ): bool,
+                    vol.Optional(
+                        CONF_ENTRY_DELAY,
+                        default=existing_zone_settings.get(
+                            CONF_ENTRY_DELAY, DEFAULT_ENTRY_DELAY
+                        ),
+                    ): bool,
                 }
             ),
             errors=errors,
         )
-
 
 
 def _validate_zone_input(zone_input: dict[str, Any] | None) -> dict[str, str]:

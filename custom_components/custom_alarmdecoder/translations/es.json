@@ -35,6 +35,7 @@
   "options": {
     "error": {
       "int": "El campo de abajo debe ser un número entero.",
+      "invalid_keypads": "Direcciones de teclado inválidas. Use números separados por comas (ej: 16,17,18).",
       "loop_range": "'Bucle RF' debe ser un número entero entre 1 y 4.",
       "loop_rfid": "'Bucle RF' no se puede usar sin 'Serie RF'.",
       "relay_inclusive": "'Dirección de relé' y 'Canal de relé' son codependientes y deben incluirse juntos."
@@ -42,8 +43,15 @@
     "step": {
       "arm_settings": {
         "data": {
+          "alarm_code": "Código de alarma",
           "auto_bypass": "Bypass automático al armar",
-          "code_arm_required": "Código requerido para armar"
+          "code_arm_required": "Código requerido para armar",
+          "auto_detect_zones": "Auto-detectar zonas",
+          "scan_panel": "Escanear panel en busca de zonas"
+        },
+        "data_description": {
+          "alarm_code": "Código de usuario para alternar timbre y otras funciones del panel",
+          "scan_panel": "Escanear el panel de alarma usando AUI para detectar y agregar zonas automáticamente. Esto tomará unos minutos y requiere soporte AUI."
         },
         "title": "Configurar AlarmDecoder"
       },
@@ -54,6 +62,15 @@
         "description": "¿Qué te gustaría editar?",
         "title": "Configurar AlarmDecoder"
       },
+      "keypads": {
+        "data": {
+          "keypads": "Direcciones de teclado"
+        },
+        "data_description": {
+          "keypads": "Lista de direcciones de teclado separadas por comas (ej: 16,17,18)"
+        },
+        "title": "Configurar AlarmDecoder"
+      },
       "zone_details": {
         "data": {
           "zone_loop": "Bucle RF",
@@ -62,7 +79,8 @@
           "zone_relaychan": "Canal de relé",
           "zone_rfid": "Serie RF",
           "zone_type": "Tipo de zona",
-          "bypassable": "Permitir Bypass"
+          "bypassable": "Permitir Bypass",
+          "entry_delay": "Retardo de Entrada"
         },
         "description": "Ingrese los detalles para la zona {zone_number}. Para eliminar la zona {zone_number}, deje en blanco 'Nombre de zona'.",
         "title": "Configurar AlarmDecoder"
@@ -102,15 +120,18 @@
     "switch": {
       "zone_bypass": {
         "name": "Bypass Zona {zone_number}"
+      },
+      "panel_chime": {
+        "name": "Timbre del Panel"
       }
-    }
-  },
-  "state": {
+    },
     "alarm_control_panel": {
-      "disarmed": "Desarmado",
-      "armed_away": "Armado Fuera",
-      "armed_home": "Armado Casa",
-      "triggered": "Disparado"
+      "state": {
+        "disarmed": "Desarmado",
+        "armed_away": "Armado Fuera",
+        "armed_home": "Armado Casa",
+        "triggered": "Disparado"
+      }
     }
   }
 }

@@ -35,6 +35,7 @@
     "options": {
         "error": {
             "int": "The field below must be an integer.",
+            "invalid_keypads": "Invalid keypad addresses. Use comma-separated numbers (e.g. 16,17,18).",
             "loop_range": "'RF loop' must be an integer between 1 and 4.",
             "loop_rfid": "'RF loop' cannot be used without 'RF serial'.",
             "relay_inclusive": "'Relay address' and 'Relay channel' are codependent and must be included together."
@@ -42,8 +43,15 @@
         "step": {
             "arm_settings": {
                 "data": {
+                    "alarm_code": "Alarm code",
                     "auto_bypass": "Auto-bypass on arm",
-                    "code_arm_required": "Code required for arming"
+                    "code_arm_required": "Code required for arming",
+                    "auto_detect_zones": "Auto-detect zones",
+                    "scan_panel": "Scan panel for zones"
+                },
+                "data_description": {
+                    "alarm_code": "User code for chime toggle and other panel functions",
+                    "scan_panel": "Scan the alarm panel using AUI to automatically detect and add zones. This will take a few minutes and requires AUI support."
                 },
                 "title": "Configure AlarmDecoder"
             },
@@ -54,6 +62,15 @@
                 "description": "What would you like to edit?",
                 "title": "Configure AlarmDecoder"
             },
+            "keypads": {
+                "data": {
+                    "keypads": "Keypad addresses"
+                },
+                "data_description": {
+                    "keypads": "Comma-separated list of keypad addresses (e.g. 16,17,18)"
+                },
+                "title": "Configure AlarmDecoder"
+            },
             "zone_details": {
                 "data": {
                     "zone_loop": "RF loop",
@@ -62,7 +79,8 @@
                     "zone_relaychan": "Relay channel",
                     "zone_rfid": "RF serial",
                     "zone_type": "Zone type",
-                    "bypassable": "Allow Bypass"
+                    "bypassable": "Allow Bypass",
+                    "entry_delay": "Entry Delay"
                 },
                 "description": "Enter details for zone {zone_number}. To delete zone {zone_number}, leave 'Zone name' blank.",
                 "title": "Configure AlarmDecoder"
@@ -102,6 +120,9 @@
         "switch": {
             "zone_bypass": {
                 "name": "Zone {zone_number} Bypass"
+            },
+            "panel_chime": {
+                "name": "Panel Chime"
             }
         },
         "alarm_control_panel": {

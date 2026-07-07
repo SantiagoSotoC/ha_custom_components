@@ -21,6 +21,10 @@ This is a custom component for integrating AlarmDecoder with Home Assistant, all
 - ✅ **Honeywell Vista 48LA** (Fully tested and working)
 - ❓ **DSC Panels** (Not tested - compatibility unknown)
 
+**Requirements for Auto-Detect:**
+- AlarmDecoder with AUI support enabled
+- Panel must support AUI commands
+
 ---
 
 ## Current Features
@@ -36,18 +40,33 @@ This is a custom component for integrating AlarmDecoder with Home Assistant, all
 - **Arm Away/Home**: Full support with bypass integration
 - **Disarm**: Standard disarm functionality
 - **Custom keypresses**: Send custom commands to the alarm panel
-- **Toggle chime**: Control panel chime settings
+- **Toggle chime**: Control panel chime settings via switch entity
+
+### ✅ Auto-Detect Zones (AUI)
+- **Panel scanning**: Automatically detect zones by scanning the alarm panel using AUI protocol
+- **Zone type detection**: Automatically identifies zone types (Entry/Exit, Perimeter, Fire, etc.)
+- **Zone name extraction**: Extracts zone names directly from panel text
+- **Background scanning**: Non-blocking panel scan with progress notifications
+- **Manual or automatic**: Choose between manual zone configuration or auto-detection
 
 ### ✅ Configuration
 - **Zone configuration**: Add, edit, and remove zones through the UI
 - **Bypass settings**: Configure which zones support bypass
 - **Zone types**: Support for different zone types (door/window, motion, etc.)
 - **Multi-language support**: Full Spanish and English translations
+- **Keypad configuration**: Configure multiple keypad addresses (e.g. 16,17,18)
+- **Entry delay settings**: Configure entry delay per zone
 
 ### ✅ Zone Management
 - **Zone numbering**: Supports zones 1-999 without leading zeros
 - **Zone deletion**: Proper zone removal handling
 - **Zone editing**: Edit existing zone configurations
+- **Zone types**: Entry/Exit, Perimeter, Interior, Fire, 24-Hour, and more
+
+### ✅ Panel Integration
+- **Panel chime switch**: Home Assistant switch to toggle panel chime on/off
+- **Alarm code storage**: Store alarm code for panel functions (chime toggle, etc.)
+- **AUI message parsing**: Full support for AlarmDecoder AUI protocol messages
 
 ---
 
@@ -65,6 +84,7 @@ This is a custom component for integrating AlarmDecoder with Home Assistant, all
 ### AlarmDecoder Hardware
 - Any AlarmDecoder device (AD2USB, AD2Serial, AD2PI, etc.)
 - Connected to a compatible Honeywell panel
+- Multiple keypads supported (configurable addresses)
 
 ---
 
@@ -72,7 +92,6 @@ This is a custom component for integrating AlarmDecoder with Home Assistant, all
 
 - **Multi-partition support**: Support for multiple alarm partitions
 - **Partition-specific messages**: Messages routed to specific partition addresses
-- **Advanced keypad handling**: Full multi-keypad address support
 - **DSC panel support**: Testing and compatibility for DSC panels
 
 ---
@@ -107,6 +126,17 @@ This is a custom component for integrating AlarmDecoder with Home Assistant, all
    - Enable "Allow Bypass" for zones you want to control
    - Configure zone-specific settings (RFID loop, relay settings, etc.)
 
+### Auto-Detect Zones
+1. In the integration options, select "Arming Settings"
+2. Enable "Scan panel for zones"
+3. The system will scan the panel using AUI and automatically add detected zones
+4. This process takes a few minutes and requires AUI support on your panel
+
+### Keypad Configuration
+1. In the integration options, select "Keypads"
+2. Enter comma-separated keypad addresses (e.g. 16,17,18)
+3. Save to apply the keypad configuration
+
 ### Usage Examples
 
 #### Manual Zone Bypass
@@ -129,6 +159,14 @@ data:
 #### Auto-Bypass
 Enable "Auto-bypass on arm" in the integration options to automatically bypass zones with faults when arming.
 
+#### Auto-Detect Zones
+1. Go to Settings > Devices & Services > AlarmDecoder > Options
+2. Select "Arming Settings"
+3. Enable "Scan panel for zones"
+4. Click Submit - the system will scan your panel using AUI protocol
+5. Detected zones will be automatically added to your configuration
+6. You can then customize zone names, types, and bypass settings
+
 ---
 
 ## Command Reference
@@ -141,6 +179,11 @@ Enable "Auto-bypass on arm" in the integration options to automatically bypass z
 - **Arm Away**: `code + 2` (e.g., `12342`)
 - **Arm Home**: `code + 3` (e.g., `12343`)
 - **Disarm**: `code + 1` (e.g., `12341`)
+
+### AUI Commands (via AlarmDecoder)
+- **Zone scan**: Automatic panel scan using AUI protocol
+- **Zone data request**: Query zone information from panel
+- **Partition count**: Query number of partitions
 
 **Note**: These command formats are specific to Honeywell panels. DSC panels may use different command sequences.
 
@@ -178,9 +221,11 @@ Contributions and suggestions are welcome. This project is maintained independen
 - **Zone bypass system**: ✅ Complete (Honeywell)
 - **Single partition support**: ✅ Complete (Honeywell)
 - **Multi-language support**: ✅ Complete
+- **Auto-detect zones (AUI)**: ✅ Complete
+- **Panel chime switch**: ✅ Complete
+- **Keypad configuration**: ✅ Complete
 - **Multi-partition support**: 🔄 Planned
 - **DSC panel support**: 🔄 Needs testing
-- **Advanced keypad handling**: 🔄 Planned
 
 ---
 
@@ -192,7 +237,13 @@ This project is open source and licensed under the **Apache License 2.0**, same 
 
 ## Changelog
 
-### Current Version
+### Version 0.0.4 (Latest)
+- ✅ **Auto-detect zones**: Scan alarm panel using AUI to automatically detect and add zones
+- ✅ **Panel chime switch**: Home Assistant switch to toggle panel chime on/off
+- ✅ **Keypad configuration**: Configure multiple keypad addresses
+- ✅ **Alarm code storage**: Store alarm code for panel functions
+- ✅ **Entry delay settings**: Per-zone entry delay configuration
+- ✅ **AUI message parsing**: Full support for AlarmDecoder AUI protocol
 - ✅ Functional zone bypass system (Honeywell panels)
 - ✅ Individual zone control switches
 - ✅ Auto-bypass support for faulted zones

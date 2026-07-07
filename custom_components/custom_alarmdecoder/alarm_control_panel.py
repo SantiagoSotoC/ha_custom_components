@@ -22,8 +22,10 @@ from . import AlarmDecoderConfigEntry
 from .const import (
     CONF_AUTO_BYPASS,
     CONF_CODE_ARM_REQUIRED,
+    CONF_KEYPADS,
     DEFAULT_ARM_OPTIONS,
     OPTIONS_ARM,
+    OPTIONS_KEYPADS,
     SIGNAL_PANEL_MESSAGE,
 )
 from .entity import AlarmDecoderEntity
@@ -45,9 +47,29 @@ async def async_setup_entry(
     options = entry.options
     arm_options = options.get(OPTIONS_ARM, DEFAULT_ARM_OPTIONS)
 
-    keypads = entry.data.get("keypads")
+    # Keypads: prefer options, fallback to data for backwards compatibility
+    keypads = options.get(OPTIONS_KEYPADS, entry.data.get(CONF_KEYPADS))
+
+    # Remove entities for keypads that no longer exist
+    entity_reg = er.async_get(hass)
+    serial = entry.runtime_data.client.serial_number
+    prefix = f"{serial}-panel-"
+    for entity_id, entity in list(entity_reg.entities.items()):
+        if (
+            entity.config_entry_id == entry.entry_id
+            and entity.domain == "alarm_control_panel"
+            and entity.unique_id.startswith(prefix)
+        ):
+            addr = entity.unique_id[len(prefix):]
+            try:
+                if int(addr) not in keypads:
+                    entity_reg.async_remove(entity_id)
+                    _LOGGER.debug("Removed stale alarm panel entity %s", entity_id)
+            except ValueError:
+                pass
+
     if not keypads:
-        return  # No crear entidades si no hay keypads configurados
+        return
 
     entities = []
     for address in keypads:
@@ -94,7 +116,7 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
     def __init__(self, client, auto_bypass, code_arm_required, address, entry_id):
         """Initialize the alarm panel."""
         super().__init__(client)
-        self._attr_unique_id = f"{client.serial_number}-panel"
+        self._attr_unique_id = f"{client.serial_number}-panel-{address}"
         self._auto_bypass = auto_bypass
         self._attr_code_arm_required = code_arm_required
         self._address = address
@@ -134,10 +156,25 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
 
         if message.alarm_sounding or message.fire_alarm:
             self._attr_alarm_state = AlarmControlPanelState.TRIGGERED
-        elif message.armed_away:
-            self._attr_alarm_state = AlarmControlPanelState.ARMED_AWAY
-        elif message.armed_home:
-            self._attr_alarm_state = AlarmControlPanelState.ARMED_HOME
+        elif message.armed_away or message.armed_home:
+            if message.beeps > 0 and self._attr_alarm_state in (
+                AlarmControlPanelState.DISARMED,
+                AlarmControlPanelState.ARMING,
+                None,
+            ):
+                # Exit delay - panel was disarmed, now arming (countdown beeps)
+                self._attr_alarm_state = AlarmControlPanelState.ARMING
+            elif message.beeps > 0 and self._attr_alarm_state in (
+                AlarmControlPanelState.ARMED_AWAY,
+                AlarmControlPanelState.ARMED_HOME,
+                AlarmControlPanelState.PENDING,
+            ):
+                # Entry delay - panel was armed, zone opened (countdown beeps)
+                self._attr_alarm_state = AlarmControlPanelState.PENDING
+            elif message.armed_away:
+                self._attr_alarm_state = AlarmControlPanelState.ARMED_AWAY
+            elif message.armed_home:
+                self._attr_alarm_state = AlarmControlPanelState.ARMED_HOME
         else:
             self._attr_alarm_state = AlarmControlPanelState.DISARMED
 
@@ -146,6 +183,7 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
             "alarm_event_occurred": message.alarm_event_occurred,
             "backlight_on": message.backlight_on,
             "battery_low": message.battery_low,
+            "beeps": message.beeps,
             "check_zone": message.check_zone,
             "chime": message.chime_on,
             "entry_delay_off": message.entry_delay_off,
@@ -153,7 +191,7 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
             "ready": message.ready,
             "zone_bypassed": message.zone_bypassed,
         }
-        self.schedule_update_ha_state()
+        self.hass.loop.call_soon_threadsafe(lambda: self.async_write_ha_state())
 
     def _get_bypass_zones(self) -> list[int]:
         """Get list of zones marked for bypass."""
@@ -236,13 +274,9 @@ class AlarmDecoderAlarmPanel(AlarmDecoderEntity, AlarmControlPanelEntity):
         
         if bypass_zones:
             _LOGGER.info("Arming home with bypassed zones: %s", bypass_zones)
-            # Enviar comando de bypass: código + 6 + zonas + *
             bypass_command = self._build_bypass_string(bypass_zones, code or "")
             _LOGGER.debug("Sending bypass command: '%s'", bypass_command)
             self._client.send(bypass_command)
-            # Luego enviar comando de armado home
-            arm_command = f"{code or ''}3"
-            _LOGGER.debug("Sending arm home command: '%s'", arm_command)
             self._client.arm_home(
                 code=code,
                 code_arm_required=self._attr_code_arm_required,
