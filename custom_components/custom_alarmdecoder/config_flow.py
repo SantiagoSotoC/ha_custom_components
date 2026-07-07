@@ -30,9 +30,6 @@ from .const import (
     CONF_DEVICE_PATH,
     CONF_ENTRY_DELAY,
     CONF_KEYPADS,
-    CONF_NOTIFY_ARM,
-    CONF_NOTIFY_DISARM,
-    CONF_NOTIFY_TRIGGER,
     CONF_RELAY_ADDR,
     CONF_RELAY_CHAN,
     CONF_SCAN_PANEL,
@@ -48,9 +45,6 @@ from .const import (
     DEFAULT_DEVICE_PATH,
     DEFAULT_DEVICE_PORT,
     DEFAULT_ENTRY_DELAY,
-    DEFAULT_NOTIFY_ARM,
-    DEFAULT_NOTIFY_DISARM,
-    DEFAULT_NOTIFY_TRIGGER,
     DEFAULT_SCAN_PANEL,
     DEFAULT_ZONE_OPTIONS,
     DEFAULT_ZONE_TYPE,
@@ -319,18 +313,6 @@ class AlarmDecoderOptionsFlowHandler(OptionsFlow):
                         "alarm_code",
                         default=self.arm_options.get("alarm_code", ""),
                     ): str,
-                    vol.Optional(
-                        CONF_NOTIFY_ARM,
-                        default=self.arm_options.get(CONF_NOTIFY_ARM, DEFAULT_NOTIFY_ARM),
-                    ): bool,
-                    vol.Optional(
-                        CONF_NOTIFY_DISARM,
-                        default=self.arm_options.get(CONF_NOTIFY_DISARM, DEFAULT_NOTIFY_DISARM),
-                    ): bool,
-                    vol.Optional(
-                        CONF_NOTIFY_TRIGGER,
-                        default=self.arm_options.get(CONF_NOTIFY_TRIGGER, DEFAULT_NOTIFY_TRIGGER),
-                    ): bool,
                 },
             ),
         )

@@ -31,9 +31,6 @@ from .const import (
     CONF_DEVICE_BAUD,
     CONF_DEVICE_PATH,
     CONF_ENTRY_DELAY,
-    CONF_NOTIFY_ARM,
-    CONF_NOTIFY_DISARM,
-    CONF_NOTIFY_TRIGGER,
     CONF_SCAN_PANEL,
     CONF_ZONE_NAME,
     CONF_ZONE_RFID,
@@ -558,66 +555,6 @@ async def async_setup_entry(
     # Register RF sensor notification callback
     entry.async_on_unload(
         async_dispatcher_connect(hass, SIGNAL_RFX_MESSAGE, notify_new_rf_sensor)
-    )
-
-    # Store last known state for notification tracking
-    _last_alarm_state: dict[str, str] = {}
-
-    def handle_alarm_state_change(event):
-        """Handle state change event for alarm notifications."""
-        new_state = event.data.get("new_state")
-        old_state = event.data.get("old_state")
-
-        if not new_state or not old_state:
-            return
-
-        entity_id = new_state.entity_id
-        if not entity_id.startswith("alarm_control_panel."):
-            return
-
-        new_alarm_state = new_state.state
-        old_alarm_state = old_state.state
-
-        # Skip if state didn't change
-        if new_alarm_state == old_alarm_state:
-            return
-
-        # Get notification settings from config entry
-        arm_options = entry.options.get(OPTIONS_ARM, DEFAULT_ARM_OPTIONS)
-        notify_arm = arm_options.get(CONF_NOTIFY_ARM, False)
-        notify_disarm = arm_options.get(CONF_NOTIFY_DISARM, False)
-        notify_trigger = arm_options.get(CONF_NOTIFY_TRIGGER, True)
-
-        # Build notification message based on state change
-        message = None
-        title = "AlarmDecoder"
-
-        if new_alarm_state == "triggered" and notify_trigger:
-            message = f"ALARM TRIGGERED on {entity_id}"
-        elif new_alarm_state == "armed_away" and notify_arm:
-            message = f"System armed (Away) on {entity_id}"
-        elif new_alarm_state == "armed_home" and notify_arm:
-            message = f"System armed (Home) on {entity_id}"
-        elif new_alarm_state == "disarmed" and notify_disarm:
-            message = f"System disarmed on {entity_id}"
-
-        if message:
-            _LOGGER.info("Sending notification: %s", message)
-            hass.async_create_task(
-                hass.services.async_call(
-                    "notify",
-                    "mobile_app",
-                    {
-                        "title": title,
-                        "message": message,
-                    },
-                    blocking=False,
-                )
-            )
-
-    # Register state change listener for notifications
-    entry.async_on_unload(
-        hass.bus.async_listen("state_changed", handle_alarm_state_change)
     )
 
     remove_stop_listener = hass.bus.async_listen_once(

@@ -48,17 +48,11 @@
           "auto_bypass": "Auto-bypass on arm",
           "code_arm_required": "Code required for arming",
           "auto_detect_zones": "Auto-detect zones",
-          "scan_panel": "Scan panel for zones",
-          "notify_arm": "Notify on arm",
-          "notify_disarm": "Notify on disarm",
-          "notify_trigger": "Notify on trigger"
+          "scan_panel": "Scan panel for zones"
         },
         "data_description": {
           "alarm_code": "User code for chime toggle and other panel functions",
-          "scan_panel": "Scan the alarm panel using AUI to automatically detect and add zones. This will take a few minutes and requires AUI support.",
-          "notify_arm": "Send push notification when system is armed",
-          "notify_disarm": "Send push notification when system is disarmed",
-          "notify_trigger": "Send push notification when alarm is triggered"
+          "scan_panel": "Scan the alarm panel using AUI to automatically detect and add zones. This will take a few minutes and requires AUI support."
         }
       },
       "zone_select": {
