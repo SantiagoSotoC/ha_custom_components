@@ -47,11 +47,17 @@
           "auto_bypass": "Bypass automático al armar",
           "code_arm_required": "Código requerido para armar",
           "auto_detect_zones": "Auto-detectar zonas",
-          "scan_panel": "Escanear panel en busca de zonas"
+          "scan_panel": "Escanear panel en busca de zonas",
+          "notify_arm": "Notificar al armar",
+          "notify_disarm": "Notificar al desarmar",
+          "notify_trigger": "Notificar al disparar"
         },
         "data_description": {
           "alarm_code": "Código de usuario para alternar timbre y otras funciones del panel",
-          "scan_panel": "Escanear el panel de alarma usando AUI para detectar y agregar zonas automáticamente. Esto tomará unos minutos y requiere soporte AUI."
+          "scan_panel": "Escanear el panel de alarma usando AUI para detectar y agregar zonas automáticamente. Esto tomará unos minutos y requiere soporte AUI.",
+          "notify_arm": "Enviar notificación push cuando el sistema se arme",
+          "notify_disarm": "Enviar notificación push cuando el sistema se desarme",
+          "notify_trigger": "Enviar notificación push cuando se dispare la alarma"
         },
         "title": "Configurar AlarmDecoder"
       },
